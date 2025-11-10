@@ -17,6 +17,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { dracula } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import JSZip from 'jszip'; // Import JSZip
 import { saveAs } from 'file-saver'; // Import saveAs from file-saver
+import ThreeDCanvas from '@/components/ThreeDCanvas'; // Import the new 3D canvas component
 
 interface GeneratedCode {
   frontend: string;
@@ -140,6 +141,7 @@ const VibeCoder = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          <ThreeDCanvas /> {/* Integrate the 3D canvas here */}
           <div className="space-y-4 p-4 border rounded-md bg-gray-50 dark:bg-gray-700">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Describe Your App</h3>
             <div className="space-y-2">
