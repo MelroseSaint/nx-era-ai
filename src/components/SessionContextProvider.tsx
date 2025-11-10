@@ -87,7 +87,11 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
         // User is authenticated, navigate to home if currently on the login page
         if (window.location.pathname === '/login') {
           hasNavigated.current = true; // Mark as navigated
-          navigate('/', { replace: true });
+          // Introduce a small delay to allow Auth component to clean up
+          const timer = setTimeout(() => {
+            navigate('/', { replace: true });
+          }, 100); // 100ms delay
+          return () => clearTimeout(timer); // Cleanup the timer if component unmounts
         }
       } else {
         // User is not authenticated, navigate to login if not already there
