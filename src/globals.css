@@ -172,6 +172,56 @@
     --sidebar-border: 197 35% 80%;
     --sidebar-ring: 51 100% 50%;
   }
+
+  /* NXE AI brand theme */
+  .nxe-ai {
+    /* Background (dark mode): Charcoal / Almost Black (#0F172A) */
+    --background: 222 47% 12%;
+    /* Text primary: White (#FFFFFF) */
+    --foreground: 0 0% 100%;
+
+    /* Cards follow dark background with readable foreground */
+    --card: 222 47% 12%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 222 47% 12%;
+    --popover-foreground: 0 0% 100%;
+
+    /* Primary accent: Electric Violet (#8B5CF6) */
+    --primary: 262 83% 67%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary highlight: Neon Cyan (#22D3EE) */
+    --secondary: 192 94% 54%;
+    --secondary-foreground: 222 47% 12%;
+
+    /* Muted text: Light Gray (#94A3B8) */
+    --muted: 222 20% 18%;
+    --muted-foreground: 215 20% 65%;
+
+    /* Accent can mirror secondary for subtle highlights */
+    --accent: 192 94% 54%;
+    --accent-foreground: 222 47% 12%;
+
+    /* Destructive keeps accessible red */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders and inputs tuned for dark UI */
+    --border: 222 20% 20%;
+    --input: 222 20% 20%;
+    --ring: 262 83% 67%;
+
+    /* Sidebar tones aligned to brand */
+    --sidebar-background: 222 47% 10%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 262 83% 67%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 192 94% 54%;
+    --sidebar-accent-foreground: 222 47% 12%;
+    --sidebar-border: 222 20% 20%;
+    --sidebar-ring: 262 83% 67%;
+  }
 }
 
 @layer base {

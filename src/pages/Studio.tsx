@@ -5,6 +5,9 @@ import { buildSandboxHtml, makeSandboxUrl } from '@/utils/sandbox';
 import { Download, Play, Eye, Terminal, Save, Share2, Bot } from 'lucide-react';
 import AIAssistantPanel from '@/components/AIAssistantPanel';
 import { supabase } from '@/integrations/supabase/client';
+import { useSession } from '@/components/SessionContextProvider';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 type FileNode = {
   path: string;
@@ -26,6 +29,8 @@ const languageFromPath = (path: string) => {
 };
 
 export default function Studio() {
+  const { user, isLoading } = useSession();
+  const navigate = useNavigate();
   const [files, setFiles] = React.useState<FileNode[]>(initialFiles);
   const [activePath, setActivePath] = React.useState<string>(initialFiles[0].path);
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
@@ -158,6 +163,34 @@ export default function Studio() {
     try { const { toast } = require('sonner'); toast.error(m); } catch { console.error(m); }
   };
 
+  // Access gating for guests and loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-lg text-foreground">Loading Studio...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md mx-auto bg-card text-card-foreground">
+          <CardHeader>
+            <CardTitle className="text-2xl text-center">Sign in to use Studio</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground text-center">The web IDE is available to registered users.</p>
+            <div className="mt-3 flex gap-3">
+              <Button className="bg-primary text-primary-foreground w-full" onClick={() => navigate('/login')}>Sign in</Button>
+              <Button variant="outline" className="w-full" onClick={() => navigate('/')}>Home</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-4 space-y-4">
         <div className="flex items-center justify-between">
@@ -185,7 +218,7 @@ export default function Studio() {
             <div className="text-sm text-muted-foreground">{activePath}</div>
           </div>
           <div className="grid grid-cols-12">
-            <aside className="col-span-4 border-r max-h-[480px] overflow-auto">
+            <aside className="col-span-4 border-r border-border max-h-[480px] overflow-auto bg-card text-card-foreground">
               <ul>
                 {files.map(f => (
                   <li key={f.path} className={`flex items-center justify-between px-3 py-2 cursor-pointer ${activePath===f.path?'bg-muted':''}`}
@@ -213,8 +246,8 @@ export default function Studio() {
         </div>
 
         {/* Preview */}
-        <div className="rounded-md border bg-card">
-          <div className="flex items-center justify-between px-3 py-2 border-b">
+        <div className="rounded-md border border-border bg-card">
+          <div className="flex items-center justify-between px-3 py-2 border-b border-border">
             <span className="font-semibold flex items-center gap-2"><Eye className="h-4 w-4"/> Preview</span>
           </div>
           {previewUrl ? (
@@ -235,8 +268,8 @@ export default function Studio() {
       </div>
 
       {/* Console */}
-      <div className="rounded-md border bg-card">
-        <div className="flex items-center gap-2 px-3 py-2 border-b">
+      <div className="rounded-md border border-border bg-card">
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
           <Terminal className="h-4 w-4"/>
           <span className="font-semibold">Console</span>
           <Button size="sm" variant="ghost" onClick={()=>setConsoleLines([])} className="ml-auto">Clear</Button>
@@ -253,6 +286,6 @@ export default function Studio() {
           )}
         </div>
       </div>
-    </div>
+  </div>
   );
 }

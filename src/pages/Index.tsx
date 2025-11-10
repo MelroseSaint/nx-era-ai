@@ -22,26 +22,28 @@ const Index = () => {
     }
   };
 
-  if (isLoading || isProfileLoading) {
+  // Only block on global auth loading; allow Home to render
+  // even if profile details are still loading in the background.
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-        <p className="text-lg text-gray-700 dark:text-gray-300">Loading authentication state...</p>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-lg text-foreground">Loading authentication state...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>
-      <div className="text-center bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
+      <div className="text-center bg-card text-card-foreground p-8 rounded-lg shadow-md">
         {session ? (
           <>
-            <h1 className="text-4xl font-bold mb-4 text-gray-900 dark:text-white">
+            <h1 className="text-4xl font-bold mb-4 text-foreground">
               Welcome, {user?.first_name || user?.email}!
             </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-6">
+            <p className="text-xl text-muted-foreground mb-6">
               You are logged in. Start building your amazing project here!
             </p>
             <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 justify-center">

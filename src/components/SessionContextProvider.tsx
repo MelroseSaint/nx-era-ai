@@ -1,3 +1,4 @@
+/* @refresh skip */
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
@@ -8,6 +9,7 @@ import { toast } from 'sonner';
 
 // Extend the User type to include profile data
 interface AppUser extends User {
+  username?: string;
   first_name?: string;
   last_name?: string;
   avatar_url?: string;
@@ -36,13 +38,15 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   const [isLoading, setIsLoading] = useState(true); // True initially
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const navigate = useNavigate();
-  const hasNavigated = useRef(false); // Track if navigation has already occurred
+  const loadingWatchdog = useRef<number | null>(null);
 
   const fetchUserProfile = async (userId: string) => {
     setIsProfileLoading(true);
+    // Use a resilient select to avoid errors if optional columns
+    // (e.g., avatar_path, banner_path) have not yet been added to the schema.
     const { data, error } = await supabase
       .from('profiles')
-      .select('first_name, last_name, avatar_path, banner_path, is_subscriber, credits, role, is_admin')
+      .select('*')
       .eq('id', userId)
       .single();
 
@@ -71,6 +75,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     supabase.auth.getSession()
       .then(async ({ data }) => {
         if (!mounted) return;
+        console.debug('[auth] getSession resolved', { hasSession: !!data.session });
         const currentSession = data.session;
         setSession(currentSession);
         if (currentSession?.user) {
@@ -84,11 +89,13 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       .catch(() => {
         // If getSession fails, still allow app to proceed
         if (!mounted) return;
+        console.warn('[auth] getSession failed; proceeding without session');
         setIsLoading(false);
       });
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
+        console.debug('[auth] onAuthStateChange', { event, hasSession: !!currentSession });
         setSession(currentSession); // Always update session
         if (currentSession?.user) {
           const profile = await fetchUserProfile(currentSession.user.id);
@@ -106,34 +113,37 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       }
     );
 
+    // Watchdog: ensure loading clears if no auth events fire (network/storage issues)
+    if (loadingWatchdog.current == null) {
+      loadingWatchdog.current = window.setTimeout(() => {
+        if (mounted) {
+          console.warn('[auth] watchdog clearing isLoading after timeout');
+          setIsLoading(false);
+        }
+      }, 4000);
+    }
+
     return () => {
       authListener.subscription.unsubscribe();
       mounted = false;
+      if (loadingWatchdog.current != null) {
+        clearTimeout(loadingWatchdog.current);
+        loadingWatchdog.current = null;
+      }
     };
   }, []);
 
   // Effect for handling navigation based on session state
   useEffect(() => {
-    if (!isLoading && !hasNavigated.current) { // Only navigate if not loading and not already navigated
-      if (session?.user) {
-        // User is authenticated, navigate to home if currently on the login page
-        if (window.location.pathname === '/login') {
-          hasNavigated.current = true; // Mark as navigated
-          // Introduce a small delay to allow Auth component to clean up
-          const timer = setTimeout(() => {
-            navigate('/dashboard', { replace: true });
-          }, 100); // 100ms delay
-          return () => clearTimeout(timer); // Cleanup the timer if component unmounts
-        }
-      } else {
-        // User is not authenticated, navigate to login if not already there
-        if (window.location.pathname !== '/login') {
-          hasNavigated.current = true; // Mark as navigated
-          navigate('/login', { replace: true });
-        }
-      }
+    if (isLoading) return;
+    const path = window.location.pathname;
+    // Only auto-redirect away from the login page after a successful sign-in.
+    // Do not globally redirect signed-out users; individual pages will gate themselves.
+    if (session?.user && path === '/login') {
+      // Small delay to allow Auth UI cleanup
+      setTimeout(() => navigate('/dashboard', { replace: true }), 100);
     }
-  }, [session, isLoading, navigate]);
+  }, [session?.user, isLoading, navigate]);
 
   return (
     <SessionContext.Provider value={{ session, user, isLoading, isProfileLoading, refreshUserProfile }}>

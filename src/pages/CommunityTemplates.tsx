@@ -138,20 +138,20 @@ const CommunityTemplates = () => {
   }, [allTemplates, filterType, searchTerm, user]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-gray-900 p-4">
+    <div className="min-h-screen flex flex-col items-center bg-background p-4">
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>
       <Card className="w-full max-w-3xl mx-auto mt-8">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold text-center">Community Templates</CardTitle>
-          <CardDescription className="text-center">
+          <CardTitle className="text-3xl font-bold text-center text-foreground">Community Templates</CardTitle>
+          <CardDescription className="text-center text-muted-foreground">
             Explore and share useful templates and modules with the community.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {user && (
-            <form onSubmit={handleAddTemplate} className="space-y-4 p-4 border rounded-md bg-gray-50 dark:bg-gray-700">
+            <form onSubmit={handleAddTemplate} className="space-y-4 p-4 border rounded-md bg-card text-card-foreground">
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Contribute a New Template</h3>
               <div className="space-y-2">
                 <Label htmlFor="templateName">Template Name</Label>

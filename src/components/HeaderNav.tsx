@@ -17,6 +17,14 @@ const HeaderNav: React.FC = () => {
     ? [user?.first_name, user?.last_name].filter(Boolean).join(" ")
     : user?.email;
 
+  const usernameOrEmail = () => {
+    const emailLocal = user?.email ? user.email.split("@")[0] : undefined;
+    if (user?.username && user.username.trim().length > 0) return user.username;
+    const nameCombo = [user?.first_name, user?.last_name].filter(Boolean).join(" ");
+    if (nameCombo) return nameCombo;
+    return emailLocal ?? "Account";
+  };
+
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -29,6 +37,12 @@ const HeaderNav: React.FC = () => {
 
   const linkBase = "text-foreground/90 hover:text-primary transition-colors";
   const linkActive = "text-foreground";
+
+  const isAdminUser = !!user && (
+    user.is_admin === true ||
+    user.role === 'admin' ||
+    (user.email?.toLowerCase() === 'monroedoses@gmail.com')
+  );
 
   return (
     <header className="w-full bg-background text-foreground border-b border-border">
@@ -70,26 +84,30 @@ const HeaderNav: React.FC = () => {
           <NavLink to="/ai-hub" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""} hover:underline underline-offset-4`}>
             AI Hub
           </NavLink>
-          <NavLink to="/admin" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""} hover:underline underline-offset-4`}>
-            Admin
-          </NavLink>
+          {isAdminUser && (
+            <NavLink to="/admin" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""} hover:underline underline-offset-4`}>
+              Admin
+            </NavLink>
+          )}
           <NavLink to="/terms" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""} hover:underline underline-offset-4`}>
             Terms
           </NavLink>
         </nav>
 
         {/* Right: Theme toggle + profile/settings */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <ThemeToggle />
           {user && (
-            <span className="hidden md:inline text-xs sm:text-sm text-muted-foreground">Signed in as {displayName}</span>
+            <span className="hidden lg:inline text-xs sm:text-sm text-muted-foreground">{usernameOrEmail()}</span>
           )}
           <div className="flex items-center gap-2">
-            <Link to="/profile-settings" title="Profile" className="inline-flex items-center gap-1 px-3 py-2 rounded bg-muted hover:bg-accent text-foreground">
-              <User className="h-4 w-4" />
-              <span className="hidden sm:inline text-sm">{user?.email ? user.email.split("@")[0] : "Profile"}</span>
-            </Link>
-            <Link to="/settings" title="Settings" className="inline-flex items-center gap-1 px-3 py-2 rounded bg-primary hover:bg-primary/80 text-primary-foreground">
+            {user && (
+              <Link to="/profile-settings" title="Profile" className="inline-flex items-center gap-1 px-3 py-2 rounded bg-muted hover:bg-accent text-foreground">
+                <User className="h-4 w-4" />
+                <span className="hidden sm:inline text-sm">{usernameOrEmail()}</span>
+              </Link>
+            )}
+            <Link to="/settings" title="Settings" className="inline-flex items-center gap-1 px-3 py-2 rounded bg-muted hover:bg-accent text-foreground">
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline text-sm">Settings</span>
             </Link>
@@ -125,9 +143,11 @@ const HeaderNav: React.FC = () => {
             <NavLink to="/ai-hub" onClick={() => setOpen(false)} className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""} py-2`}>
               AI Hub
             </NavLink>
-            <NavLink to="/admin" onClick={() => setOpen(false)} className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""} py-2`}>
-              Admin
-            </NavLink>
+            {isAdminUser && (
+              <NavLink to="/admin" onClick={() => setOpen(false)} className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""} py-2`}>
+                Admin
+              </NavLink>
+            )}
             <NavLink to="/terms" onClick={() => setOpen(false)} className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""} py-2`}>
               Terms
             </NavLink>

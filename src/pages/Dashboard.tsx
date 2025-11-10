@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { startCheckout } from '@/integrations/stripe/client';
+import { PRICE_PRO } from '@/integrations/stripe/prices';
 
 const Dashboard = () => {
   const { user, isLoading, isProfileLoading, refreshUserProfile } = useSession();
@@ -19,9 +21,6 @@ const Dashboard = () => {
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && !user) {
-      navigate('/login'); // Redirect to login if not authenticated
-    }
     if (user) {
       setFirstName(user.first_name || '');
       setLastName(user.last_name || '');
@@ -47,28 +46,50 @@ const Dashboard = () => {
     setIsUpdating(false);
   };
 
-  if (isLoading || isProfileLoading || !user) {
+  if (isLoading || isProfileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-        <p className="text-lg text-gray-700 dark:text-gray-300">Loading user dashboard...</p>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-lg text-foreground">Loading user dashboard...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="absolute top-4 right-4">
+          <ThemeToggle />
+        </div>
+        <Card className="w-full max-w-md mx-auto bg-card text-card-foreground">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">Sign in to access your Dashboard</CardTitle>
+            <CardDescription className="text-center text-muted-foreground">Manage your profile and apps after signing in.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2">
+              <Button className="w-full bg-primary text-primary-foreground" onClick={() => navigate('/login')}>Sign in</Button>
+              <Button variant="outline" className="w-full" onClick={() => navigate('/')}>Home</Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>
-      <Card className="w-full max-w-md mx-auto">
+      <Card className="w-full max-w-md mx-auto bg-card text-card-foreground">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold text-center">User Dashboard</CardTitle>
-          <CardDescription className="text-center">Manage your profile information.</CardDescription>
+          <CardTitle className="text-3xl font-bold text-center text-foreground">User Dashboard</CardTitle>
+          <CardDescription className="text-center text-muted-foreground">Manage your profile information.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" value={user.email || ''} disabled className="bg-gray-50 dark:bg-gray-700" />
+            <Input id="email" type="email" value={user.email || ''} disabled />
           </div>
           <div className="space-y-2">
             <Label htmlFor="subscriber-status">Subscriber Status</Label>
@@ -76,9 +97,25 @@ const Dashboard = () => {
               id="subscriber-status"
               value={user.is_subscriber ? 'Subscriber' : 'Not a Subscriber'}
               disabled
-              className={`font-medium ${user.is_subscriber ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'} bg-gray-50 dark:bg-gray-700`}
+              className={`font-medium ${user.is_subscriber ? 'text-primary' : 'text-destructive'} bg-muted`}
             />
           </div>
+          {!user.is_subscriber && (
+            <Button
+              className="w-full bg-primary text-primary-foreground"
+              type="button"
+              onClick={() => {
+                startCheckout(
+                  PRICE_PRO,
+                  'subscription',
+                  { userId: user.id },
+                  user?.email ?? undefined
+                );
+              }}
+            >
+              Upgrade to Pro
+            </Button>
+          )}
 
           <form onSubmit={handleProfileUpdate} className="space-y-4">
             <div className="space-y-2">

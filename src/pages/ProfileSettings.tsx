@@ -5,11 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession } from "@/components/SessionContextProvider";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const ProfileSettings: React.FC = () => {
-  const { user } = useSession();
+  const { user, isLoading, isProfileLoading } = useSession();
+  const navigate = useNavigate();
   const [username, setUsername] = React.useState<string>(user?.email?.split("@")[0] ?? "");
   const [email, setEmail] = React.useState<string>(user?.email ?? "");
   const [password, setPassword] = React.useState<string>("");
@@ -173,6 +175,26 @@ const ProfileSettings: React.FC = () => {
     if (!signErr && signed?.signedUrl) setBannerSignedUrl(signed.signedUrl);
     toast.success('Banner updated');
   };
+
+  if (isLoading || isProfileLoading) {
+    return (
+      <div className="container mx-auto py-6 px-4">
+        <div className="mb-4">
+          <h1 className="text-2xl font-semibold" style={{
+            background: "linear-gradient(90deg, #8B5CF6, #22D3EE)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}>Loading Profile...</h1>
+          <p className="text-muted-foreground">Please wait while we load your profile.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    navigate('/login');
+    return null;
+  }
 
   return (
     <div className="container mx-auto py-6 px-4">

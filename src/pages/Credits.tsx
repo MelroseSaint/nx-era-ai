@@ -3,13 +3,17 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { useSession } from "@/components/SessionContextProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertTriangle, Coins, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 import { toast } from "sonner";
+import { startCheckout } from "@/integrations/stripe/client";
+import { PRICE_PRO, PRICE_CREDITS_100, PRICE_CREDITS_500, PRICE_CREDITS_1000 } from "@/integrations/stripe/prices";
 
 const Credits: React.FC = () => {
   const { user } = useSession();
+  const navigate = useNavigate();
   const [credits, setCredits] = React.useState<number>(0);
   const [transactions, setTransactions] = React.useState<{ id?: string; type: "earn"|"spend"|"purchase"; amount: number; note?: string; timestamp: number }[]>([]);
 
@@ -77,7 +81,45 @@ const Credits: React.FC = () => {
     if (credits <= 0) return;
     persistChange(-5, "spend", "Action usage");
   };
-  const purchase = () => persistChange(+100, "purchase", "Package purchased");
+  const purchasePack = async (packCredits: number) => {
+    const priceMap: Record<number, string> = {
+      100: PRICE_CREDITS_100,
+      500: PRICE_CREDITS_500,
+      1000: PRICE_CREDITS_1000,
+    };
+    const priceId = priceMap[packCredits];
+    if (!priceId || priceId.startsWith('price_mock')) {
+      toast.error('Stripe prices are not configured.');
+      return;
+    }
+    await startCheckout(priceId, 'payment', { userId: user!.id, credits: String(packCredits) }, user?.email ?? undefined);
+  };
+  const upgradeToPro = () => {
+    if (!PRICE_PRO || PRICE_PRO.startsWith('price_mock')) {
+      toast.error('Pro subscription price is not configured.');
+      return;
+    }
+    startCheckout(PRICE_PRO, 'subscription', { userId: user!.id }, user?.email ?? undefined);
+  };
+
+  if (!user) {
+    return (
+      <div className="container mx-auto py-6 px-4">
+        <Card className="max-w-xl mx-auto bg-card text-card-foreground">
+          <CardHeader>
+            <CardTitle>Sign in to manage credits</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">Credits are available only to registered users.</p>
+            <div className="mt-3 flex gap-3">
+              <Button className="bg-primary hover:bg-primary/80 text-primary-foreground" onClick={() => navigate('/login')}>Sign in</Button>
+              <Button className="bg-muted hover:bg-accent" onClick={() => navigate('/login')}>Create account</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-6 px-4">
@@ -112,7 +154,12 @@ const Credits: React.FC = () => {
               <Button className="bg-primary hover:bg-primary/80 text-primary-foreground" onClick={spend}>
                 Spend -5
               </Button>
-              <Button className="bg-secondary hover:bg-accent text-foreground" onClick={purchase}>Purchase +100</Button>
+              <div className="flex flex-wrap gap-2">
+                <Button className="bg-secondary hover:bg-accent text-foreground" onClick={() => purchasePack(100)}>Buy 100</Button>
+                <Button className="bg-secondary hover:bg-accent text-foreground" onClick={() => purchasePack(500)}>Buy 500</Button>
+                <Button className="bg-secondary hover:bg-accent text-foreground" onClick={() => purchasePack(1000)}>Buy 1000</Button>
+              </div>
+              <Button className="bg-primary hover:bg-primary/80 text-primary-foreground" onClick={upgradeToPro}>Upgrade to Pro</Button>
             </div>
           </CardContent>
         </Card>

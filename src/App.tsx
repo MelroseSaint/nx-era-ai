@@ -38,7 +38,7 @@ const App = () => (
           v7_relativeSplatPath: true,
         }}
       >
-        <ThemeProvider attribute="class" defaultTheme="family-guy" storageKey="vite-ui-theme">
+        <ThemeProvider attribute="class" defaultTheme="nxe-ai" storageKey="vite-ui-theme" themes={["light","dark","black-green","family-guy","nxe-ai"]}>
           <SessionContextProvider>
             {/* App Header */}
             <HeaderNav />

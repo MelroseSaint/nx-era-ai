@@ -5,11 +5,11 @@ import path from "path";
 export default defineConfig(() => ({
   server: {
     host: "localhost",
-    port: 3001,
+    port: 3003,
     strictPort: true,
     hmr: {
       host: "localhost",
-      clientPort: 3001,
+      clientPort: 3003,
       protocol: "ws",
     },
   },

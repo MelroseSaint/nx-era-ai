@@ -113,25 +113,25 @@ const UserApps = () => {
 
   if (isLoading || isProfileLoading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-        <p className="text-lg text-gray-700 dark:text-gray-300">Loading user applications...</p>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-lg text-foreground">Loading user applications...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-gray-900 p-4">
+    <div className="min-h-screen flex flex-col items-center bg-background p-4">
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>
-      <Card className="w-full max-w-2xl mx-auto mt-8">
+      <Card className="w-full max-w-2xl mx-auto mt-8 bg-card text-card-foreground">
         <CardHeader>
           <CardTitle className="text-3xl font-bold text-center">My Applications</CardTitle>
           <CardDescription className="text-center">Manage your generated applications.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <form onSubmit={handleAddApp} className="space-y-4 p-4 border rounded-md bg-gray-50 dark:bg-gray-700">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Add New Application</h3>
+          <form onSubmit={handleAddApp} className="space-y-4 p-4 border rounded-md bg-card text-card-foreground">
+            <h3 className="text-xl font-semibold text-foreground">Add New Application</h3>
             <div className="space-y-2">
               <Label htmlFor="appName">Application Name</Label>
               <Input

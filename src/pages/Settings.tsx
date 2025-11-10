@@ -11,7 +11,7 @@ const Settings: React.FC = () => {
   const [compactMode, setCompactMode] = React.useState(false);
 
   return (
-    <div className="container mx-auto py-6 px-4">
+    <div className="container mx-auto py-6 px-4 bg-background text-foreground">
       <div className="mb-4">
         <h1 className="text-2xl font-semibold" style={{
           background: "linear-gradient(90deg, #8B5CF6, #22D3EE)",
