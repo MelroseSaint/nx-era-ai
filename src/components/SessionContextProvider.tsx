@@ -56,41 +56,45 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     }
   };
 
+  // Effect for handling auth state changes from Supabase
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
-        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-          setSession(currentSession);
-          if (currentSession?.user) {
-            const profile = await fetchUserProfile(currentSession.user.id);
-            setUser({ ...currentSession.user, ...profile });
-            if (event === 'SIGNED_IN') {
-              // Only navigate if not already on the home page
-              if (window.location.pathname !== '/') {
-                navigate('/');
-              }
-              toast.success("Welcome back!");
-            }
-          } else {
-            setUser(null);
-            if (event === 'INITIAL_SESSION') {
-              navigate('/login');
-            }
+        setSession(currentSession); // Always update session
+        if (currentSession?.user) {
+          const profile = await fetchUserProfile(currentSession.user.id);
+          setUser({ ...currentSession.user, ...profile });
+          if (event === 'SIGNED_IN') {
+            toast.success("Welcome back!");
           }
-        } else if (event === 'SIGNED_OUT') {
-          setSession(null);
+        } else {
           setUser(null);
-          navigate('/login');
-          toast.info("You have been signed out.");
         }
-        setIsLoading(false); // Set loading to false after the first auth state is determined
+        setIsLoading(false); // Auth state determined
       }
     );
 
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [navigate]); // Added navigate to dependency array
+  }, []); // No dependencies here, as navigate is handled in a separate effect
+
+  // Effect for handling navigation based on session state
+  useEffect(() => {
+    if (!isLoading) {
+      if (session?.user) {
+        // User is authenticated, navigate to home if currently on the login page
+        if (window.location.pathname === '/login') {
+          navigate('/');
+        }
+      } else {
+        // User is not authenticated, navigate to login if not already there
+        if (window.location.pathname !== '/login') {
+          navigate('/login');
+        }
+      }
+    }
+  }, [session, isLoading, navigate]); // Dependencies: session, isLoading, navigate
 
   return (
     <SessionContext.Provider value={{ session, user, isLoading, isProfileLoading, refreshUserProfile }}>
