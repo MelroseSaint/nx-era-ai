@@ -112,6 +112,9 @@ const Dashboard = () => {
           <Button variant="outline" className="w-full" onClick={() => navigate('/my-apps')}>
             Manage My Applications
           </Button>
+          <Button variant="outline" className="w-full" onClick={() => navigate('/my-projects')}>
+            View My Generated Projects
+          </Button>
           <Button variant="outline" className="w-full" onClick={() => navigate('/community-templates')}>
             Browse Community Templates
           </Button>
