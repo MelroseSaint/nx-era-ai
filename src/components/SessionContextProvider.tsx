@@ -74,6 +74,9 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
           if (event === 'SIGNED_IN') {
             toast.success("Welcome back!");
           }
+        } else if (event === 'PASSWORD_RECOVERY') {
+          // Route users to the reset password page when they land via recovery link
+          navigate('/reset-password', { replace: true });
         } else {
           setUser(null);
         }

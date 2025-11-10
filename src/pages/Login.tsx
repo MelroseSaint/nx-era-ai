@@ -43,6 +43,7 @@ function Login() {
           providers={[]} // You can add 'google', 'github', etc. here if needed
           view="sign_in"
           magicLink={false}
+          redirectTo={`${window.location.origin}/reset-password`}
           appearance={{
             theme: ThemeSupa,
             variables: {
