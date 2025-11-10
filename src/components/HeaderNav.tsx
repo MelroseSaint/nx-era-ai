@@ -1,14 +1,27 @@
 "use client";
 
 import React from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useSession } from "@/components/SessionContextProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Menu, User, Settings } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const HeaderNav: React.FC = () => {
   const { user } = useSession();
   const [open, setOpen] = React.useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error("Failed to log out: " + error.message);
+    } else {
+      toast.success("Logged out successfully!");
+      navigate('/login');
+    }
+  };
 
   const linkBase = "text-foreground/90 hover:text-primary transition-colors";
   const linkActive = "text-foreground";
@@ -73,6 +86,15 @@ const HeaderNav: React.FC = () => {
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline text-sm">Settings</span>
             </Link>
+            {user ? (
+              <button onClick={handleLogout} className="inline-flex items-center gap-1 px-3 py-2 rounded bg-red-600 hover:bg-red-700 text-white">
+                Logout
+              </button>
+            ) : (
+              <Link to="/login" className="inline-flex items-center gap-1 px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white">
+                Login
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -102,6 +124,17 @@ const HeaderNav: React.FC = () => {
             <NavLink to="/terms" onClick={() => setOpen(false)} className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""} py-2`}>
               Terms
             </NavLink>
+            <div className="mt-2 pt-2 border-t border-border">
+              {user ? (
+                <button onClick={() => { setOpen(false); handleLogout(); }} className="text-left px-2 py-2 rounded bg-red-600 hover:bg-red-700 text-white">
+                  Logout
+                </button>
+              ) : (
+                <NavLink to="/login" onClick={() => setOpen(false)} className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""} py-2`}>
+                  Login
+                </NavLink>
+              )}
+            </div>
           </nav>
         </div>
       )}
