@@ -23,6 +23,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Settings from "./pages/Settings";
 import ProfileSettings from "./pages/ProfileSettings";
 import ResetPassword from "./pages/ResetPassword";
+import AuthDiagnostics from "./pages/AuthDiagnostics";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const App = () => (
               <Route path="/settings" element={<Settings />} />
               <Route path="/profile-settings" element={<ProfileSettings />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/auth-diagnostics" element={<AuthDiagnostics />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/share/:id" element={<SharePreview />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
