@@ -20,9 +20,13 @@ function Login() {
 
   // If a session exists, it means the user is authenticated.
   // The SessionContextProvider's useEffect will handle the navigation to the home page.
-  // We return null here to prevent the Auth component from rendering if the user is already logged in.
+  // Here, we show a "redirecting" message to ensure the component always renders a valid element.
   if (session) {
-    return null; // SessionContextProvider will handle the redirect to '/'
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+        <p className="text-lg text-gray-700 dark:text-gray-300">Redirecting...</p>
+      </div>
+    );
   }
 
   // If not loading and no session, render the Auth component
@@ -47,7 +51,7 @@ function Login() {
             },
           }}
           theme="light" // Use light theme, adjust if dark mode is preferred
-          // Removed redirectTo prop to centralize navigation in SessionContextProvider
+          // redirectTo prop is intentionally removed to centralize navigation in SessionContextProvider
         />
       </div>
       <MadeWithDyad />
