@@ -1,5 +1,5 @@
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+// import { Toaster as Sonner } from "@/components/ui/sonner"; // Temporarily commented out for debugging
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -13,7 +13,7 @@ import VibeCoder from "./pages/VibeCoder";
 import MyProjects from "./pages/MyProjects";
 import ProjectDetails from "./pages/ProjectDetails"; // Import the new ProjectDetails page
 import { SessionContextProvider } from "./components/SessionContextProvider";
-import { ThemeProvider } from "@/components/theme-provider";
+// import { ThemeProvider } from "@/components/theme-provider"; // Temporarily commented out for debugging
 
 const queryClient = new QueryClient();
 
@@ -21,9 +21,9 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
-      <Sonner />
+      {/* <Sonner /> */} {/* Temporarily commented out for debugging */}
       <BrowserRouter>
-        <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+        {/* <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme"> */} {/* Temporarily commented out for debugging */}
           <SessionContextProvider>
             <Routes>
               <Route path="/" element={<Index />} />
@@ -38,7 +38,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </SessionContextProvider>
-        </ThemeProvider>
+        {/* </ThemeProvider> */} {/* Temporarily commented out for debugging */}
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
