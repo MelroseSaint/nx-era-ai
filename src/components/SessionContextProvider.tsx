@@ -27,7 +27,7 @@ const SessionContext = createContext<SessionContextType | undefined>(undefined);
 export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<AppUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // True initially
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -59,54 +59,36 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
-        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'USER_UPDATED') {
           setSession(currentSession);
           if (currentSession?.user) {
             const profile = await fetchUserProfile(currentSession.user.id);
             setUser({ ...currentSession.user, ...profile });
             if (event === 'SIGNED_IN') {
-              navigate('/'); // Redirect to home page on sign in
+              navigate('/');
               toast.success("Welcome back!");
             }
           } else {
             setUser(null);
             if (event === 'INITIAL_SESSION') {
-              navigate('/login'); // Redirect to login if no initial session
+              navigate('/login');
             }
           }
         } else if (event === 'SIGNED_OUT') {
           setSession(null);
           setUser(null);
-          navigate('/login'); // Redirect to login page on sign out
+          navigate('/login');
           toast.info("You have been signed out.");
-        } else if (event === 'USER_UPDATED') {
-          if (currentSession?.user) {
-            const profile = await fetchUserProfile(currentSession.user.id);
-            setUser({ ...currentSession.user, ...profile });
-            toast.success("Profile updated!");
-          }
         }
-        setIsLoading(false);
+        setIsLoading(false); // Set loading to false after the first auth state is determined
       }
     );
-
-    // Initial session check
-    supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
-      setSession(initialSession);
-      if (initialSession?.user) {
-        const profile = await fetchUserProfile(initialSession.user.id);
-        setUser({ ...initialSession.user, ...profile });
-      } else {
-        navigate('/login');
-      }
-      setIsLoading(false);
-    });
 
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [navigate, session?.user?.id]); // Added session.user.id to dependency array for refreshUserProfile
-  // Note: The `session` object itself might change, but `session.user.id` is more stable for re-fetching profile.
+  }, [navigate]); // Removed session?.user?.id from dependencies to avoid re-running on profile updates,
+                  // as USER_UPDATED event handles that.
 
   return (
     <SessionContext.Provider value={{ session, user, isLoading, isProfileLoading, refreshUserProfile }}>
