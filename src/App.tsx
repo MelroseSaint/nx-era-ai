@@ -7,7 +7,8 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import UserApps from "./pages/UserApps"; // Import the new UserApps page
+import UserApps from "./pages/UserApps";
+import CommunityTemplates from "./pages/CommunityTemplates"; // Import the new CommunityTemplates page
 import { SessionContextProvider } from "./components/SessionContextProvider";
 import { ThemeProvider } from "@/components/theme-provider";
 
@@ -25,7 +26,8 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/my-apps" element={<UserApps />} /> {/* Add the UserApps route */}
+              <Route path="/my-apps" element={<UserApps />} />
+              <Route path="/community-templates" element={<CommunityTemplates />} /> {/* Add the CommunityTemplates route */}
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
