@@ -13,6 +13,10 @@ const HeaderNav: React.FC = () => {
   const [open, setOpen] = React.useState(false);
   const navigate = useNavigate();
 
+  const displayName = (user?.first_name || user?.last_name)
+    ? [user?.first_name, user?.last_name].filter(Boolean).join(" ")
+    : user?.email;
+
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -77,6 +81,9 @@ const HeaderNav: React.FC = () => {
         {/* Right: Theme toggle + profile/settings */}
         <div className="flex items-center gap-3">
           <ThemeToggle />
+          {user && (
+            <span className="hidden md:inline text-xs sm:text-sm text-muted-foreground">Signed in as {displayName}</span>
+          )}
           <div className="flex items-center gap-2">
             <Link to="/profile-settings" title="Profile" className="inline-flex items-center gap-1 px-3 py-2 rounded bg-muted hover:bg-accent text-foreground">
               <User className="h-4 w-4" />
@@ -91,9 +98,9 @@ const HeaderNav: React.FC = () => {
                 Logout
               </button>
             ) : (
-              <Link to="/login" className="inline-flex items-center gap-1 px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white">
+              <button onClick={() => navigate('/login')} className="inline-flex items-center gap-1 px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white">
                 Login
-              </Link>
+              </button>
             )}
           </div>
         </div>
@@ -130,9 +137,12 @@ const HeaderNav: React.FC = () => {
                   Logout
                 </button>
               ) : (
-                <NavLink to="/login" onClick={() => setOpen(false)} className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""} py-2`}>
+                <button
+                  onClick={() => { setOpen(false); navigate('/login'); }}
+                  className="text-left px-2 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white"
+                >
                   Login
-                </NavLink>
+                </button>
               )}
             </div>
           </nav>
