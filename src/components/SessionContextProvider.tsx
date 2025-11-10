@@ -85,12 +85,12 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       if (session?.user) {
         // User is authenticated, navigate to home if currently on the login page
         if (window.location.pathname === '/login') {
-          navigate('/');
+          navigate('/', { replace: true });
         }
       } else {
         // User is not authenticated, navigate to login if not already there
         if (window.location.pathname !== '/login') {
-          navigate('/login');
+          navigate('/login', { replace: true });
         }
       }
     }

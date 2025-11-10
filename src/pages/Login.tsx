@@ -4,29 +4,32 @@ import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionContextProvider';
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { MadeWithDyad } from '@/components/made-with-dyad';
 
 function Login() {
   const { session, isLoading } = useSession();
-  const navigate = useNavigate();
 
+  // If still loading, show a loading message
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-        <p className="text-lg text-gray-700 dark:text-gray-300">Loading...</p>
+        <p className="text-lg text-gray-700 dark:text-gray-300">Loading authentication state...</p>
       </div>
     );
   }
 
-  // If not loading and a session exists, the SessionContextProvider should handle navigation.
-  // We explicitly return null here to prevent the Auth component from rendering
-  // if the user is already logged in but somehow still on the /login page.
+  // If a session exists, it means the user is authenticated.
+  // The SessionContextProvider's useEffect will handle the navigation to the home page.
+  // Here, we show a "redirecting" message to ensure the component always renders a valid element.
   if (session) {
-    return null; // SessionContextProvider will redirect to '/'
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+        <p className="text-lg text-gray-700 dark:text-gray-300">Redirecting...</p>
+      </div>
+    );
   }
 
+  // If not loading and no session, render the Auth component
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
       <div className="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
