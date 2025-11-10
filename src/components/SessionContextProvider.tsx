@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -30,6 +30,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   const [isLoading, setIsLoading] = useState(true); // True initially
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const navigate = useNavigate();
+  const hasNavigated = useRef(false); // Track if navigation has already occurred
 
   const fetchUserProfile = async (userId: string) => {
     setIsProfileLoading(true);
@@ -77,24 +78,26 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, []); // No dependencies here, as navigate is handled in a separate effect
+  }, []);
 
   // Effect for handling navigation based on session state
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && !hasNavigated.current) { // Only navigate if not loading and not already navigated
       if (session?.user) {
         // User is authenticated, navigate to home if currently on the login page
         if (window.location.pathname === '/login') {
+          hasNavigated.current = true; // Mark as navigated
           navigate('/', { replace: true });
         }
       } else {
         // User is not authenticated, navigate to login if not already there
         if (window.location.pathname !== '/login') {
+          hasNavigated.current = true; // Mark as navigated
           navigate('/login', { replace: true });
         }
       }
     }
-  }, [session, isLoading, navigate]); // Dependencies: session, isLoading, navigate
+  }, [session, isLoading, navigate]);
 
   return (
     <SessionContext.Provider value={{ session, user, isLoading, isProfileLoading, refreshUserProfile }}>
