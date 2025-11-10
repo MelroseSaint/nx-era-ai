@@ -15,6 +15,9 @@ import { assist } from "@/integrations/ai/trae";
 const AIHub: React.FC = () => {
   const { user, isLoading } = useSession();
   const navigate = useNavigate();
+  const displayName = (user?.first_name || user?.last_name)
+    ? [user?.first_name, user?.last_name].filter(Boolean).join(" ")
+    : user?.email;
 
   // Chat state
   const [messages, setMessages] = React.useState<{ role: "user" | "assistant"; content: string }[]>([]);
@@ -118,6 +121,9 @@ const AIHub: React.FC = () => {
             WebkitTextFillColor: "transparent",
           }}>AI Hub</h1>
           <p className="text-muted-foreground">Chat with the assistant and preview your code live.</p>
+          {user && (
+            <p className="mt-1 text-sm text-muted-foreground">User: Signed in as {displayName}</p>
+          )}
         </div>
 
         {/* Layout: responsive two-column */}

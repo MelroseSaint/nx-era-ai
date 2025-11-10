@@ -32,7 +32,12 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Sonner /> {/* Use Sonner here */}
-      <BrowserRouter>
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
         <ThemeProvider attribute="class" defaultTheme="family-guy" storageKey="vite-ui-theme">
           <SessionContextProvider>
             {/* App Header */}
