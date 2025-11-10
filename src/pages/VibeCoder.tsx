@@ -15,6 +15,8 @@ import { Loader2, Code, Download } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { dracula } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import JSZip from 'jszip'; // Import JSZip
+import { saveAs } from 'file-saver'; // Import saveAs from file-saver
 
 interface GeneratedCode {
   frontend: string;
@@ -43,7 +45,7 @@ const VibeCoder = () => {
     if (!appName.trim()) {
       toast.error("Please enter an app name.");
       return;
-    }
+      }
 
     setIsGenerating(true);
     setGeneratedCode(null);
@@ -90,38 +92,26 @@ const VibeCoder = () => {
     }
   };
 
-  const handleDownloadCode = () => {
+  const handleDownloadCode = async () => {
     if (!generatedCode || !appName.trim()) {
       toast.error("No code to download or app name is missing.");
       return;
     }
 
-    const zip = new (window as any).JSZip(); // JSZip will be added as a dependency later for actual zipping
+    const zip = new JSZip();
+    const folderName = appName.trim().replace(/\s+/g, '-').toLowerCase(); // Create a slug for the folder name
 
-    // For now, we'll just create text files
-    const frontendBlob = new Blob([generatedCode.frontend], { type: 'text/plain' });
-    const backendBlob = new Blob([generatedCode.backend], { type: 'text/plain' });
+    zip.file(`${folderName}/frontend/src/App.tsx`, generatedCode.frontend);
+    zip.file(`${folderName}/backend/index.js`, generatedCode.backend); // Assuming backend is index.js
 
-    const frontendUrl = URL.createObjectURL(frontendBlob);
-    const backendUrl = URL.createObjectURL(backendBlob);
-
-    const frontendLink = document.createElement('a');
-    frontendLink.href = frontendUrl;
-    frontendLink.download = `${appName.trim()}-frontend.tsx`;
-    document.body.appendChild(frontendLink);
-    frontendLink.click();
-    document.body.removeChild(frontendLink);
-    URL.revokeObjectURL(frontendUrl);
-
-    const backendLink = document.createElement('a');
-    backendLink.href = backendUrl;
-    backendLink.download = `${appName.trim()}-backend.js`;
-    document.body.appendChild(backendLink);
-    backendLink.click();
-    document.body.removeChild(backendLink);
-    URL.revokeObjectURL(backendUrl);
-
-    toast.success("Code downloaded!");
+    try {
+      const content = await zip.generateAsync({ type: "blob" });
+      saveAs(content, `${folderName}.zip`);
+      toast.success("Code downloaded successfully!");
+    } catch (error) {
+      console.error("Error zipping or downloading files:", error);
+      toast.error("Failed to download code.");
+    }
   };
 
   if (isLoading || isProfileLoading) {
