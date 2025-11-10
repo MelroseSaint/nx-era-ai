@@ -15,6 +15,7 @@ import ProjectDetails from "./pages/ProjectDetails";
 import TermsOfService from "./pages/TermsOfService";
 import SharePreview from "./pages/SharePreview";
 import { SessionContextProvider } from "./components/SessionContextProvider";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { ThemeProvider } from "@/components/theme-provider"; // Re-enabled ThemeProvider
 import HeaderNav from "@/components/HeaderNav";
 import LoginBanner from "@/components/LoginBanner";
@@ -46,18 +47,18 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/my-apps" element={<UserApps />} />
-              <Route path="/community-templates" element={<CommunityTemplates />} />
-              <Route path="/vibe-coder" element={<VibeCoder />} />
-              <Route path="/ai-hub" element={<AIHub />} />
-              <Route path="/studio" element={<Studio />} />
-              <Route path="/my-projects" element={<MyProjects />} />
-              <Route path="/my-projects/:projectId" element={<ProjectDetails />} />
-              <Route path="/credits" element={<Credits />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/profile-settings" element={<ProfileSettings />} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/my-apps" element={<ProtectedRoute><UserApps /></ProtectedRoute>} />
+              <Route path="/community-templates" element={<ProtectedRoute><CommunityTemplates /></ProtectedRoute>} />
+              <Route path="/vibe-coder" element={<ProtectedRoute><VibeCoder /></ProtectedRoute>} />
+              <Route path="/ai-hub" element={<ProtectedRoute><AIHub /></ProtectedRoute>} />
+              <Route path="/studio" element={<ProtectedRoute><Studio /></ProtectedRoute>} />
+              <Route path="/my-projects" element={<ProtectedRoute><MyProjects /></ProtectedRoute>} />
+              <Route path="/my-projects/:projectId" element={<ProtectedRoute><ProjectDetails /></ProtectedRoute>} />
+              <Route path="/credits" element={<ProtectedRoute><Credits /></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              <Route path="/profile-settings" element={<ProtectedRoute><ProfileSettings /></ProtectedRoute>} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/auth-diagnostics" element={<AuthDiagnostics />} />
               <Route path="/terms" element={<TermsOfService />} />
