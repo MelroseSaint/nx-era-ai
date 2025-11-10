@@ -1,6 +1,5 @@
 "use client";
 
-import { MadeWithDyad } from "@/components/made-with-dyad";
 import { useSession } from "@/components/SessionContextProvider";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -82,7 +81,6 @@ const Index = () => {
           </>
         )}
       </div>
-      <MadeWithDyad />
     </div>
   );
 };

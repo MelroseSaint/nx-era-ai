@@ -11,7 +11,13 @@ interface AppUser extends User {
   first_name?: string;
   last_name?: string;
   avatar_url?: string;
+  banner_url?: string;
+  avatar_path?: string;
+  banner_path?: string;
   is_subscriber?: boolean;
+  credits?: number;
+  role?: string; // e.g., 'admin', 'user'
+  is_admin?: boolean; // convenience flag if present in profile
 }
 
 interface SessionContextType {
@@ -36,7 +42,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     setIsProfileLoading(true);
     const { data, error } = await supabase
       .from('profiles')
-      .select('first_name, last_name, avatar_url, is_subscriber')
+      .select('first_name, last_name, avatar_path, banner_path, is_subscriber, credits, role, is_admin')
       .eq('id', userId)
       .single();
 

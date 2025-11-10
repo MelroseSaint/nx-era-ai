@@ -4,7 +4,6 @@ import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionContextProvider';
-import { MadeWithDyad } from '@/components/made-with-dyad';
 
 function Login() {
   const { session, isLoading } = useSession();
@@ -33,12 +32,17 @@ function Login() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
       <div className="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-6">
-          Welcome
+        <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-2">
+          Email & Password Login
         </h2>
+        <p className="text-sm text-center text-gray-600 dark:text-gray-300 mb-6">
+          Single sign-on providers are disabled for this project.
+        </p>
         <Auth
           supabaseClient={supabase}
           providers={[]} // You can add 'google', 'github', etc. here if needed
+          view="sign_in"
+          magicLink={false}
           appearance={{
             theme: ThemeSupa,
             variables: {
@@ -54,7 +58,6 @@ function Login() {
           // redirectTo prop is intentionally removed to centralize navigation in SessionContextProvider
         />
       </div>
-      <MadeWithDyad />
     </div>
   );
 }

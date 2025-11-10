@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { MadeWithDyad } from '@/components/made-with-dyad';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -44,6 +43,7 @@ const ProjectDetails = () => {
   const [isUpdatingProject, setIsUpdatingProject] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeCodeTab, setActiveCodeTab] = useState<'frontend' | 'backend'>('frontend');
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -145,6 +145,45 @@ const ProjectDetails = () => {
     }
   };
 
+  const buildSandboxHtml = React.useCallback((code: string) => {
+    const isHtml = /<html|<!doctype/i.test(code);
+    if (isHtml) return code;
+    const safeName = (project?.name || 'Preview');
+    const html = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>${safeName}</title>
+    <style>body{font-family:system-ui,sans-serif;padding:1rem;background:#f5f5f5;color:#111}#root{background:#fff;border:1px solid #ddd;padding:1rem;border-radius:8px;min-height:300px}</style>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+      ${code}
+      const RootComponent = typeof App !== 'undefined' ? App : () => React.createElement('div', null, 'No App component found.');
+      const rootEl = document.getElementById('root');
+      ReactDOM.render(React.createElement(RootComponent), rootEl);
+    </script>
+  </body>
+</html>`;
+    return html;
+  }, [project?.name]);
+
+  React.useEffect(() => {
+    if (project?.generated_code?.frontend) {
+      const html = buildSandboxHtml(project.generated_code.frontend);
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setPreviewUrl(null);
+    }
+  }, [project?.generated_code?.frontend, buildSandboxHtml]);
+
   const handleDownloadProjectCode = async () => {
     if (!project?.generated_code || !project.name.trim()) {
       toast.error("No code to download or project name is missing.");
@@ -195,7 +234,6 @@ const ProjectDetails = () => {
             <Button onClick={() => navigate('/my-projects')}>Back to My Projects</Button>
           </CardContent>
         </Card>
-        <MadeWithDyad />
       </div>
     );
   }
@@ -262,7 +300,7 @@ const ProjectDetails = () => {
           </form>
 
           <div className="space-y-4 p-4 border rounded-md bg-gray-50 dark:bg-gray-700">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Generated Code</h3>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Generated Code & Preview</h3>
             <div className="flex space-x-2">
               <Tabs value={activeCodeTab} onValueChange={(value) => setActiveCodeTab(value as 'frontend' | 'backend')}>
                 <TabsList>
@@ -274,15 +312,30 @@ const ProjectDetails = () => {
                 <Download className="mr-2 h-4 w-4" /> Download Project
               </Button>
             </div>
-            <div className="relative rounded-md overflow-hidden">
-              <SyntaxHighlighter
-                language={activeCodeTab === 'frontend' ? 'typescript' : 'javascript'}
-                style={dracula}
-                showLineNumbers
-                customStyle={highlighterStyle}
-              >
-                {activeCodeTab === 'frontend' ? project.generated_code?.frontend || '// No frontend code generated' : project.generated_code?.backend || '// No backend code generated'}
-              </SyntaxHighlighter>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="relative rounded-md overflow-hidden">
+                <SyntaxHighlighter
+                  language={activeCodeTab === 'frontend' ? 'typescript' : 'javascript'}
+                  style={dracula}
+                  showLineNumbers
+                  customStyle={highlighterStyle}
+                >
+                  {activeCodeTab === 'frontend' ? project.generated_code?.frontend || '// No frontend code generated' : project.generated_code?.backend || '// No backend code generated'}
+                </SyntaxHighlighter>
+              </div>
+              <div className="rounded-md overflow-hidden border bg-white">
+                <div className="flex items-center justify-between px-3 py-2 bg-muted">
+                  <span className="font-semibold">App Preview</span>
+                  {previewUrl && (
+                    <a className="text-sm underline" href={previewUrl} target="_blank" rel="noreferrer">Open in new tab</a>
+                  )}
+                </div>
+                {previewUrl ? (
+                  <iframe title="Preview" src={previewUrl} className="w-full h-[500px]" />
+                ) : (
+                  <div className="p-4 text-sm text-gray-700">No preview available.</div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -291,7 +344,6 @@ const ProjectDetails = () => {
           </Button>
         </CardContent>
       </Card>
-      <MadeWithDyad />
     </div>
   );
 };

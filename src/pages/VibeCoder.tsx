@@ -9,14 +9,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { MadeWithDyad } from '@/components/made-with-dyad';
-import { ThemeToggle } from '@/components/ThemeToggle';
-import { Loader2, Code, Download } from 'lucide-react';
+import { Loader2, Code, Download, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { dracula } from 'react-syntax-highlighter/dist/esm/styles/prism';
 // Heavy utilities are loaded on demand to cut initial bundle size
-import ThreeDCanvas from '@/components/ThreeDCanvas'; // Import the new 3D canvas component
+// import ThreeDCanvas from '@/components/ThreeDCanvas';
 
 interface GeneratedCode {
   frontend: string;
@@ -31,6 +29,48 @@ const VibeCoder = () => {
   const [generatedCode, setGeneratedCode] = useState<GeneratedCode | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState<'frontend' | 'backend'>('frontend');
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  const buildSandboxHtml = React.useCallback((code: string) => {
+    const isHtml = /<html|<!doctype/i.test(code);
+    if (isHtml) return code;
+    // Basic React+Babel sandbox for JSX/TSX snippets
+    const safeName = appName || 'Preview';
+    const html = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>${safeName}</title>
+    <style>body{font-family:system-ui,sans-serif;padding:1rem;background:#f5f5f5;color:#111}#root{background:#fff;border:1px solid #ddd;padding:1rem;border-radius:8px;min-height:300px}</style>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+      // User code
+      ${code}
+      const RootComponent = typeof App !== 'undefined' ? App : () => React.createElement('div', null, 'No App component found.');
+      const rootEl = document.getElementById('root');
+      ReactDOM.render(React.createElement(RootComponent), rootEl);
+    </script>
+  </body>
+</html>`;
+    return html;
+  }, [appName]);
+
+  React.useEffect(() => {
+    if (generatedCode?.frontend) {
+      const html = buildSandboxHtml(generatedCode.frontend);
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setPreviewUrl(null);
+    }
+  }, [generatedCode, appName, buildSandboxHtml]);
 
   const handleGenerateCode = async () => {
     if (!user) {
@@ -40,6 +80,10 @@ const VibeCoder = () => {
     }
     if (!prompt.trim()) {
       toast.error("Please enter a description for your app.");
+      return;
+    }
+    if (prompt.trim().length > 2000) {
+      toast.error("Description is too long. Please keep it under 2000 characters.");
       return;
     }
     if (!appName.trim()) {
@@ -61,8 +105,14 @@ const VibeCoder = () => {
         toast.error("Failed to generate code: " + error.message);
         setGeneratedCode(null);
       } else if (data?.generatedCode) {
-        const code = data.generatedCode as GeneratedCode;
-        setGeneratedCode(code);
+        const code = data.generatedCode as Partial<GeneratedCode>;
+        if (typeof code.frontend !== 'string' || typeof code.backend !== 'string') {
+          console.error('Malformed generatedCode payload:', code);
+          toast.error("AI returned malformed code payload.");
+          setGeneratedCode(null);
+        } else {
+          setGeneratedCode({ frontend: code.frontend, backend: code.backend });
+        }
         toast.success("Code generated successfully!");
 
         // Save the generated project to Supabase
@@ -102,15 +152,32 @@ const VibeCoder = () => {
       toast.error("No code to download or app name is missing.");
       return;
     }
-    const JSZip = (await import('jszip')).default;
-    const { saveAs } = await import('file-saver');
-    const zip = new JSZip();
-    const folderName = appName.trim().replace(/\s+/g, '-').toLowerCase(); // Create a slug for the folder name
 
-    zip.file(`${folderName}/frontend/src/App.tsx`, generatedCode.frontend);
-    zip.file(`${folderName}/backend/index.js`, generatedCode.backend); // Assuming backend is index.js
+    const frontend = generatedCode.frontend?.trim();
+    const backend = generatedCode.backend?.trim();
+    if (!frontend || !backend) {
+      toast.error("Generated code is empty or malformed.");
+      return;
+    }
+
+    let JSZip: any;
+    let saveAs: (data: Blob, filename?: string) => void;
+    try {
+      JSZip = (await import('jszip')).default;
+      ({ saveAs } = await import('file-saver'));
+    } catch (err) {
+      console.error('Failed to load download dependencies:', err);
+      toast.error("Download dependencies failed to load. Please try again.");
+      return;
+    }
+
+    const zip = new JSZip();
+    const folderName = appName.trim().replace(/\s+/g, '-').toLowerCase();
 
     try {
+      zip.file(`${folderName}/frontend/src/App.tsx`, frontend);
+      zip.file(`${folderName}/backend/index.js`, backend);
+
       const content = await zip.generateAsync({ type: "blob" });
       saveAs(content, `${folderName}.zip`);
       toast.success("Code downloaded successfully!");
@@ -135,20 +202,18 @@ const VibeCoder = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-gray-900 p-4">
-      <div className="absolute top-4 right-4">
-        <ThemeToggle />
-      </div>
+      {/* Theme toggle temporarily disabled until ThemeProvider is restored */}
       <Card className="w-full max-w-4xl mx-auto mt-8">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold text-center">VibeCoder AI</CardTitle>
-          <CardDescription className="text-center">
+          <CardTitle className="text-3xl font-bold text-center laser-text tracking-wide">NXE AI — VibeCoder</CardTitle>
+          <CardDescription className="text-center leading-relaxed">
             Describe your app in natural language, and let AI generate the code.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <ThreeDCanvas /> {/* Integrate the 3D canvas here */}
+          {/* 3D canvas temporarily disabled to avoid runtime errors in dev */}
           <div className="space-y-4 p-4 border rounded-md bg-gray-50 dark:bg-gray-700">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Describe Your App</h3>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white laser-text tracking-wide">Describe Your App</h3>
             <div className="space-y-2">
               <Label htmlFor="appName">App Name</Label>
               <Input
@@ -173,7 +238,7 @@ const VibeCoder = () => {
                 required
               />
             </div>
-            <Button onClick={handleGenerateCode} className="w-full" disabled={isGenerating}>
+            <Button onClick={handleGenerateCode} className="w-full laser-button" disabled={isGenerating}>
               {isGenerating ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...
@@ -188,42 +253,56 @@ const VibeCoder = () => {
 
           {generatedCode && (
             <div className="space-y-4 p-4 border rounded-md bg-gray-50 dark:bg-gray-700">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Generated Code</h3>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white laser-text tracking-wide">Generated Code & Preview</h3>
               <div className="flex space-x-2">
                 <Button
                   variant={activeTab === 'frontend' ? 'default' : 'outline'}
                   onClick={() => setActiveTab('frontend')}
+                  className="laser-button"
                 >
                   Frontend
                 </Button>
                 <Button
                   variant={activeTab === 'backend' ? 'default' : 'outline'}
                   onClick={() => setActiveTab('backend')}
+                  className="laser-button"
                 >
                   Backend
                 </Button>
-                <Button onClick={handleDownloadCode} className="ml-auto">
+                <Button onClick={handleDownloadCode} className="ml-auto laser-button">
                   <Download className="mr-2 h-4 w-4" /> Download
                 </Button>
               </div>
-              <div className="relative rounded-md overflow-hidden">
-                <SyntaxHighlighter
-                  language={activeTab === 'frontend' ? 'typescript' : 'javascript'}
-                  style={dracula}
-                  showLineNumbers
-                  customStyle={{
-                    padding: '1rem',
-                    borderRadius: '0.375rem',
-                    maxHeight: '500px',
-                    overflowY: 'auto',
-                  }}
-                >
-                  {activeTab === 'frontend' ? generatedCode.frontend : generatedCode.backend}
-                </SyntaxHighlighter>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="relative rounded-md overflow-hidden">
+                  <SyntaxHighlighter
+                    language={activeTab === 'frontend' ? 'typescript' : 'javascript'}
+                    style={dracula}
+                    showLineNumbers
+                    customStyle={{
+                      padding: '1rem',
+                      borderRadius: '0.375rem',
+                      maxHeight: '500px',
+                      overflowY: 'auto',
+                    }}
+                  >
+                    {activeTab === 'frontend' ? generatedCode.frontend : generatedCode.backend}
+                  </SyntaxHighlighter>
+                </div>
+                <div className="rounded-md overflow-hidden border bg-white">
+                  <div className="flex items-center justify-between px-3 py-2 bg-muted">
+                    <span className="font-semibold flex items-center gap-2"><Eye className="h-4 w-4"/> App Preview</span>
+                    {previewUrl && (
+                      <a className="text-sm underline" href={previewUrl} target="_blank" rel="noreferrer">Open in new tab</a>
+                    )}
+                  </div>
+                  {previewUrl ? (
+                    <iframe title="Preview" src={previewUrl} className="w-full h-[500px]" />
+                  ) : (
+                    <div className="p-4 text-sm text-gray-700">No preview available.</div>
+                  )}
+                </div>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                **Live Preview:** A true live preview for a full-stack app requires a sandboxed environment and a build process. For now, you can copy the generated code into your local development environment to see it in action. Future iterations could include a more integrated preview.
-              </p>
             </div>
           )}
 
@@ -232,7 +311,6 @@ const VibeCoder = () => {
           </Button>
         </CardContent>
       </Card>
-      <MadeWithDyad />
     </div>
   );
 };

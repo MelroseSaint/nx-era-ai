@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { MadeWithDyad } from '@/components/made-with-dyad';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Eye, Trash2, Download, Edit } from 'lucide-react'; // Added Edit icon
 import {
@@ -264,7 +263,6 @@ const MyProjects = () => {
           </Button>
         </CardContent>
       </Card>
-      <MadeWithDyad />
     </div>
   );
 };

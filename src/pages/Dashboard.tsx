@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { MadeWithDyad } from '@/components/made-with-dyad';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 const Dashboard = () => {
@@ -123,7 +122,6 @@ const Dashboard = () => {
           </Button>
         </CardContent>
       </Card>
-      <MadeWithDyad />
     </div>
   );
 };

@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { MadeWithDyad } from '@/components/made-with-dyad';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { PlusCircle, ExternalLink, Trash2, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -183,7 +182,7 @@ const CommunityTemplates = () => {
                   type="url"
                   value={newTemplateUrl}
                   onChange={(e) => setNewTemplateUrl(e.target.value)}
-                  placeholder="https://github.com/your-template"
+              placeholder="https://example.com/your-template"
                   disabled={isAddingTemplate}
                 />
               </div>
@@ -273,7 +272,6 @@ const CommunityTemplates = () => {
           </Button>
         </CardContent>
       </Card>
-      <MadeWithDyad />
     </div>
   );
 };
