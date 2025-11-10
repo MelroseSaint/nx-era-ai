@@ -106,6 +106,9 @@ const Dashboard = () => {
               {isUpdating ? 'Updating...' : 'Update Profile'}
             </Button>
           </form>
+          <Button variant="outline" className="w-full" onClick={() => navigate('/my-apps')}>
+            Manage My Applications
+          </Button>
           <Button variant="outline" className="w-full" onClick={() => navigate('/')}>
             Back to Home
           </Button>
