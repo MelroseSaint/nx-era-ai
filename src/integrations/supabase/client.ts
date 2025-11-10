@@ -1,18 +1,45 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Read environment variables injected by Vite/Vercel builds
+const rawUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
+const rawAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim();
 
-// Provide safe fallbacks in dev to avoid hard crashes when env vars are missing
-const resolvedUrl = supabaseUrl && typeof supabaseUrl === 'string' && supabaseUrl.length > 0
-  ? supabaseUrl
-  : 'https://placeholder.supabase.co';
-const resolvedAnonKey = supabaseAnonKey && typeof supabaseAnonKey === 'string' && supabaseAnonKey.length > 0
-  ? supabaseAnonKey
-  : 'public-anon-key';
+// Strict guards: fail loudly in production if env is missing or malformed
+const missingEnv = !rawUrl || !rawAnonKey;
+const invalidScheme = rawUrl && !rawUrl.startsWith('https://');
 
-if (resolvedUrl === 'https://placeholder.supabase.co' || resolvedAnonKey === 'public-anon-key') {
-  console.warn('Supabase environment variables are missing. Using placeholder client for development.');
+if (missingEnv) {
+  const msg = 'Supabase configuration error: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY must be set.';
+  if (import.meta.env.PROD) {
+    throw new Error(msg);
+  } else {
+    console.warn(msg);
+  }
 }
 
-export const supabase = createClient(resolvedUrl, resolvedAnonKey);
+if (invalidScheme) {
+  const msg = `Supabase URL appears invalid: ${rawUrl}. Expected https://...`;
+  if (import.meta.env.PROD) {
+    throw new Error(msg);
+  } else {
+    console.warn(msg);
+  }
+}
+
+// Helpful runtime debug: log target domain without exposing secrets
+if (rawUrl) {
+  try {
+    const u = new URL(rawUrl);
+    console.info(`[supabase] client target: ${u.origin}`);
+  } catch {
+    // ignore URL parse errors
+  }
+}
+
+export const supabase = createClient(rawUrl as string, rawAnonKey as string, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+  },
+});
