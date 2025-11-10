@@ -51,7 +51,7 @@ function Login() {
             },
           }}
           theme="light" // Use light theme, adjust if dark mode is preferred
-          redirectTo={window.location.origin + '/'}
+          // Removed redirectTo prop to centralize navigation in SessionContextProvider
         />
       </div>
       <MadeWithDyad />
