@@ -4,9 +4,14 @@ import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionContextProvider';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
   const { session, isLoading } = useSession();
+  const [view, setView] = useState<'sign_in' | 'sign_up' | 'magic_link' | 'forgotten_password'>('sign_in');
+  const navigate = useNavigate();
 
   // If still loading, show a loading message
   if (isLoading) {
@@ -32,16 +37,19 @@ function Login() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
       <div className="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-2">
-          Email & Password Login
-        </h2>
-        <p className="text-sm text-center text-gray-600 dark:text-gray-300 mb-6">
-          Single sign-on providers are disabled for this project.
-        </p>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome</h2>
+          <Button variant="ghost" onClick={() => navigate('/')}>Home</Button>
+        </div>
+        <div className="flex gap-2 mb-4">
+          <Button variant={view === 'sign_in' ? 'default' : 'outline'} onClick={() => setView('sign_in')}>Sign in</Button>
+          <Button variant={view === 'sign_up' ? 'default' : 'outline'} onClick={() => setView('sign_up')}>Create account</Button>
+          <Button variant={view === 'forgotten_password' ? 'default' : 'outline'} onClick={() => setView('forgotten_password')}>Reset password</Button>
+        </div>
         <Auth
           supabaseClient={supabase}
-          providers={[]} // You can add 'google', 'github', etc. here if needed
-          view="sign_in"
+          providers={[]}
+          view={view}
           magicLink={false}
           appearance={{
             theme: ThemeSupa,
@@ -54,9 +62,11 @@ function Login() {
               },
             },
           }}
-          theme="light" // Use light theme, adjust if dark mode is preferred
-          // redirectTo prop is intentionally removed to centralize navigation in SessionContextProvider
+          theme="light"
         />
+        <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-3">
+          Need help? Use a valid email and a strong password. After signing in, you’ll be redirected to your dashboard.
+        </p>
       </div>
     </div>
   );
