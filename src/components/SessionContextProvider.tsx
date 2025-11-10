@@ -65,7 +65,10 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
             const profile = await fetchUserProfile(currentSession.user.id);
             setUser({ ...currentSession.user, ...profile });
             if (event === 'SIGNED_IN') {
-              navigate('/');
+              // Only navigate if not already on the home page
+              if (window.location.pathname !== '/') {
+                navigate('/');
+              }
               toast.success("Welcome back!");
             }
           } else {
@@ -87,8 +90,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [navigate]); // Removed session?.user?.id from dependencies to avoid re-running on profile updates,
-                  // as USER_UPDATED event handles that.
+  }, [navigate]); // Added navigate to dependency array
 
   return (
     <SessionContext.Provider value={{ session, user, isLoading, isProfileLoading, refreshUserProfile }}>

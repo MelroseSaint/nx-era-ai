@@ -163,6 +163,13 @@ const ProjectDetails = () => {
     }
   };
 
+  const highlighterStyle = React.useMemo(() => ({
+    padding: '1rem',
+    borderRadius: '0.375rem',
+    maxHeight: '500px',
+    overflowY: 'auto',
+  }), []);
+
   if (isLoading || isProfileLoading || loadingProject || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
@@ -267,12 +274,7 @@ const ProjectDetails = () => {
                 language={activeCodeTab === 'frontend' ? 'typescript' : 'javascript'}
                 style={dracula}
                 showLineNumbers
-                customStyle={{
-                  padding: '1rem',
-                  borderRadius: '0.375rem',
-                  maxHeight: '500px',
-                  overflowY: 'auto',
-                }}
+                customStyle={highlighterStyle}
               >
                 {activeCodeTab === 'frontend' ? project.generated_code?.frontend || '// No frontend code generated' : project.generated_code?.backend || '// No backend code generated'}
               </SyntaxHighlighter>

@@ -120,6 +120,14 @@ const MyProjects = () => {
     }
   };
 
+  const highlighterStyle = React.useMemo(() => ({
+    padding: '1rem',
+    borderRadius: '0.375rem',
+    height: '100%',
+    width: '100%',
+    overflow: 'auto',
+  }), []);
+
   if (isLoading || isProfileLoading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
@@ -205,13 +213,7 @@ const MyProjects = () => {
                                   language="typescript"
                                   style={dracula}
                                   showLineNumbers
-                                  customStyle={{
-                                    padding: '1rem',
-                                    borderRadius: '0.375rem',
-                                    height: '100%',
-                                    width: '100%',
-                                    overflow: 'auto',
-                                  }}
+                                  customStyle={highlighterStyle}
                                 >
                                   {selectedProjectCode?.frontend || '// No frontend code generated'}
                                 </SyntaxHighlighter>
@@ -221,13 +223,7 @@ const MyProjects = () => {
                                   language="javascript"
                                   style={dracula}
                                   showLineNumbers
-                                  customStyle={{
-                                    padding: '1rem',
-                                    borderRadius: '0.375rem',
-                                    height: '100%',
-                                    width: '100%',
-                                    overflow: 'auto',
-                                  }}
+                                  customStyle={highlighterStyle}
                                 >
                                   {selectedProjectCode?.backend || '// No backend code generated'}
                                 </SyntaxHighlighter>

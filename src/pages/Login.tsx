@@ -12,11 +12,12 @@ function Login() {
   const { session, isLoading } = useSession();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!isLoading && session) {
-      navigate('/'); // Redirect to home if already logged in
-    }
-  }, [session, isLoading, navigate]);
+  // Removed redundant useEffect for navigation, as SessionContextProvider handles it.
+  // useEffect(() => {
+  //   if (!isLoading && session) {
+  //     navigate('/'); // Redirect to home if already logged in
+  //   }
+  // }, [session, isLoading, navigate]);
 
   if (isLoading) {
     return (
