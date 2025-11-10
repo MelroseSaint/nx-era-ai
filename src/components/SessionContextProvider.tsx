@@ -102,10 +102,18 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
           setUser(profile ? { ...currentSession.user, ...profile } : currentSession.user);
           if (event === 'SIGNED_IN') {
             toast.success("Welcome back!");
+            // If user signs in on the login page, redirect to dashboard
+            const path = window.location.pathname;
+            if (path.startsWith('/login')) {
+              navigate('/dashboard', { replace: true });
+            }
           }
         } else if (event === 'PASSWORD_RECOVERY') {
           // Route users to the reset password page when they land via recovery link
           navigate('/reset-password', { replace: true });
+        } else if (event === 'SIGNED_OUT') {
+          // Ensure signed-out users land on the login page
+          navigate('/login', { replace: true });
         } else {
           setUser(null);
         }
@@ -139,7 +147,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     const path = window.location.pathname;
     // Only auto-redirect away from the login page after a successful sign-in.
     // Do not globally redirect signed-out users; individual pages will gate themselves.
-    if (session?.user && path === '/login') {
+    if (session?.user && path.startsWith('/login')) {
       // Small delay to allow Auth UI cleanup
       setTimeout(() => navigate('/dashboard', { replace: true }), 100);
     }

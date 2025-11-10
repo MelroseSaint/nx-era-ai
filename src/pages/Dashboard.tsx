@@ -27,6 +27,17 @@ const Dashboard = () => {
     }
   }, [user, isLoading, navigate]);
 
+  // If unauthenticated and not loading, hard-redirect to Login to reduce confusion
+  useEffect(() => {
+    if (!isLoading && !isProfileLoading && !user) {
+      const path = window.location.pathname;
+      // Only redirect on dashboard route to keep Home freely accessible
+      if (path.startsWith('/dashboard')) {
+        navigate('/login', { replace: true });
+      }
+    }
+  }, [user, isLoading, isProfileLoading, navigate]);
+
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
