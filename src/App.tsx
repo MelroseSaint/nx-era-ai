@@ -6,8 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard"; // Import the new Dashboard page
 import { SessionContextProvider } from "./components/SessionContextProvider";
-import { ThemeProvider } from "@/components/theme-provider"; // Import ThemeProvider
+import { ThemeProvider } from "@/components/theme-provider";
 
 const queryClient = new QueryClient();
 
@@ -17,11 +18,12 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme"> {/* Wrap with ThemeProvider */}
+        <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
           <SessionContextProvider>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/dashboard" element={<Dashboard />} /> {/* Add the Dashboard route */}
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import GatedContent from "@/components/GatedContent"; // Import GatedContent
+import GatedContent from "@/components/GatedContent";
 
 const Index = () => {
   const { session, user, isLoading, isProfileLoading } = useSession();
@@ -45,9 +45,14 @@ const Index = () => {
             <p className="text-xl text-gray-600 dark:text-gray-300 mb-6">
               You are logged in. Start building your amazing project here!
             </p>
-            <Button onClick={handleLogout} className="bg-red-600 hover:bg-red-700 text-white">
-              Log Out
-            </Button>
+            <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 justify-center">
+              <Button onClick={handleLogout} className="bg-red-600 hover:bg-red-700 text-white">
+                Log Out
+              </Button>
+              <Button onClick={() => navigate('/dashboard')} className="bg-blue-600 hover:bg-blue-700 text-white">
+                Go to Dashboard
+              </Button>
+            </div>
 
             <div className="mt-8">
               <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">

@@ -19,6 +19,7 @@ interface SessionContextType {
   user: AppUser | null;
   isLoading: boolean;
   isProfileLoading: boolean;
+  refreshUserProfile: () => Promise<void>; // Added function to refresh user profile
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -46,6 +47,13 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     }
     setIsProfileLoading(false);
     return data;
+  };
+
+  const refreshUserProfile = async () => {
+    if (session?.user) {
+      const profile = await fetchUserProfile(session.user.id);
+      setUser({ ...session.user, ...profile });
+    }
   };
 
   useEffect(() => {
@@ -97,10 +105,11 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, session?.user?.id]); // Added session.user.id to dependency array for refreshUserProfile
+  // Note: The `session` object itself might change, but `session.user.id` is more stable for re-fetching profile.
 
   return (
-    <SessionContext.Provider value={{ session, user, isLoading, isProfileLoading }}>
+    <SessionContext.Provider value={{ session, user, isLoading, isProfileLoading, refreshUserProfile }}>
       {children}
     </SessionContext.Provider>
   );
