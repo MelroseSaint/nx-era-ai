@@ -12,7 +12,7 @@ import VibeCoder from "./pages/VibeCoder";
 import MyProjects from "./pages/MyProjects";
 import ProjectDetails from "./pages/ProjectDetails";
 import { SessionContextProvider } from "./components/SessionContextProvider";
-import { ThemeProvider } from "@/components/theme-provider"; // Re-enable ThemeProvider
+// import { ThemeProvider } from "@/components/theme-provider"; // Re-enable ThemeProvider
 
 const queryClient = new QueryClient();
 
@@ -21,7 +21,7 @@ const App = () => (
     <TooltipProvider>
       <Sonner /> {/* Use Sonner here */}
       <BrowserRouter>
-        <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme"> {/* Re-enable ThemeProvider */}
+        {/* <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme"> */}
           <SessionContextProvider>
             <Routes>
               <Route path="/" element={<Index />} />
@@ -36,7 +36,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </SessionContextProvider>
-        </ThemeProvider>
+        {/* </ThemeProvider> */}
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
