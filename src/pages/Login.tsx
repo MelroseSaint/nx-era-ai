@@ -20,13 +20,9 @@ function Login() {
 
   // If a session exists, it means the user is authenticated.
   // The SessionContextProvider's useEffect will handle the navigation to the home page.
-  // Here, we show a "redirecting" message to ensure the component always renders a valid element.
+  // We return null here to prevent the Auth component from rendering if the user is already logged in.
   if (session) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-        <p className="text-lg text-gray-700 dark:text-gray-300">Redirecting...</p>
-      </div>
-    );
+    return null; // SessionContextProvider will handle the redirect to '/'
   }
 
   // If not loading and no session, render the Auth component
