@@ -17,6 +17,7 @@ import SharePreview from "./pages/SharePreview";
 import { SessionContextProvider } from "./components/SessionContextProvider";
 import { ThemeProvider } from "@/components/theme-provider"; // Re-enabled ThemeProvider
 import HeaderNav from "@/components/HeaderNav";
+import LoginBanner from "@/components/LoginBanner";
 import AIHub from "./pages/AIHub";
 import Credits from "./pages/Credits";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -36,6 +37,7 @@ const App = () => (
           <SessionContextProvider>
             {/* App Header */}
             <HeaderNav />
+            <LoginBanner />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />

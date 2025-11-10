@@ -119,7 +119,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
           hasNavigated.current = true; // Mark as navigated
           // Introduce a small delay to allow Auth component to clean up
           const timer = setTimeout(() => {
-            navigate('/', { replace: true });
+            navigate('/dashboard', { replace: true });
           }, 100); // 100ms delay
           return () => clearTimeout(timer); // Cleanup the timer if component unmounts
         }
