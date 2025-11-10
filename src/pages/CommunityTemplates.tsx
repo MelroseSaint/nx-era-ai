@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useSession } from '@/components/SessionContextProvider';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { MadeWithDyad } from '@/components/made-with-dyad';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { PlusCircle, ExternalLink, Trash2 } from 'lucide-react'; // Added Trash2
+import { PlusCircle, ExternalLink, Trash2, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -24,6 +24,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Import Tabs components
 
 interface CommunityTemplate {
   id: string;
@@ -37,16 +38,18 @@ interface CommunityTemplate {
 const CommunityTemplates = () => {
   const { user, isLoading, isProfileLoading } = useSession();
   const navigate = useNavigate();
-  const [templates, setTemplates] = useState<CommunityTemplate[]>([]);
+  const [allTemplates, setAllTemplates] = useState<CommunityTemplate[]>([]); // Store all fetched templates
   const [newTemplateName, setNewTemplateName] = useState('');
   const [newTemplateDescription, setNewTemplateDescription] = useState('');
   const [newTemplateUrl, setNewTemplateUrl] = useState('');
   const [isAddingTemplate, setIsAddingTemplate] = useState(false);
   const [isFetchingTemplates, setIsFetchingTemplates] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState<'all' | 'my-templates'>('all');
 
   useEffect(() => {
     fetchCommunityTemplates();
-  }, []); // Fetch templates on component mount, no user dependency needed for public read
+  }, []);
 
   const fetchCommunityTemplates = async () => {
     setIsFetchingTemplates(true);
@@ -58,7 +61,7 @@ const CommunityTemplates = () => {
     if (error) {
       toast.error("Failed to fetch community templates: " + error.message);
     } else {
-      setTemplates(data || []);
+      setAllTemplates(data || []);
     }
     setIsFetchingTemplates(false);
   };
@@ -89,7 +92,7 @@ const CommunityTemplates = () => {
     if (error) {
       toast.error("Failed to add template: " + error.message);
     } else if (data) {
-      setTemplates([data, ...templates]);
+      setAllTemplates([data, ...allTemplates]); // Add to allTemplates
       setNewTemplateName('');
       setNewTemplateDescription('');
       setNewTemplateUrl('');
@@ -107,15 +110,33 @@ const CommunityTemplates = () => {
       .from('community_templates')
       .delete()
       .eq('id', templateId)
-      .eq('author_id', user.id); // Ensure user can only delete their own templates
+      .eq('author_id', user.id);
 
     if (error) {
       toast.error("Failed to delete template: " + error.message);
     } else {
-      setTemplates(templates.filter((template) => template.id !== templateId));
+      setAllTemplates(allTemplates.filter((template) => template.id !== templateId)); // Update allTemplates
       toast.success("Template deleted successfully!");
     }
   };
+
+  const filteredTemplates = useMemo(() => {
+    let filtered = allTemplates;
+
+    if (filterType === 'my-templates' && user) {
+      filtered = filtered.filter(template => template.author_id === user.id);
+    }
+
+    if (searchTerm.trim()) {
+      const lowerCaseSearchTerm = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        template =>
+          template.name.toLowerCase().includes(lowerCaseSearchTerm) ||
+          (template.description && template.description.toLowerCase().includes(lowerCaseSearchTerm))
+      );
+    }
+    return filtered;
+  }, [allTemplates, filterType, searchTerm, user]);
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-gray-900 p-4">
@@ -174,13 +195,34 @@ const CommunityTemplates = () => {
 
           <div className="space-y-4">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Available Templates</h3>
+            <div className="flex flex-col sm:flex-row gap-4 mb-4">
+              <div className="relative flex-grow">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <Input
+                  type="text"
+                  placeholder="Search templates..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 w-full"
+                />
+              </div>
+              {user && (
+                <Tabs value={filterType} onValueChange={(value) => setFilterType(value as 'all' | 'my-templates')} className="w-full sm:w-auto">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="all">All Templates</TabsTrigger>
+                    <TabsTrigger value="my-templates">My Templates</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              )}
+            </div>
+
             {isFetchingTemplates ? (
               <p className="text-gray-500 text-center">Loading community templates...</p>
-            ) : templates.length === 0 ? (
+            ) : filteredTemplates.length === 0 ? (
               <p className="text-gray-500 text-center">No community templates available yet. Be the first to add one!</p>
             ) : (
               <div className="grid gap-4">
-                {templates.map((template) => (
+                {filteredTemplates.map((template) => (
                   <Card key={template.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4">
                     <div className="flex-grow mb-2 sm:mb-0">
                       <CardTitle className="text-lg">{template.name}</CardTitle>
