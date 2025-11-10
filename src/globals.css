@@ -88,6 +88,47 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
+  .black-gold {
+    --background: 0 0% 0%; /* Black */
+    --foreground: 40 100% 50%; /* Gold */
+
+    --card: 0 0% 0%;
+    --card-foreground: 40 100% 50%;
+
+    --popover: 0 0% 0%;
+    --popover-foreground: 40 100% 50%;
+
+    --primary: 40 100% 50%;
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 220 3% 15%;
+    --secondary-foreground: 40 100% 50%;
+
+    --muted: 220 3% 15%;
+    --muted-foreground: 220 3% 60%;
+
+    --accent: 220 3% 15%;
+    --accent-foreground: 40 100% 50%;
+
+    --destructive: 0 84.2% 60.2%; /* Keep red for destructive */
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 3% 25%;
+    --input: 220 3% 20%;
+    --ring: 40 100% 50%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 0%;
+    --sidebar-foreground: 40 100% 50%;
+    --sidebar-primary: 40 100% 50%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 220 3% 15%;
+    --sidebar-accent-foreground: 40 100% 50%;
+    --sidebar-border: 220 3% 25%;
+    --sidebar-ring: 40 100% 50%;
+  }
 }
 
 @layer base {

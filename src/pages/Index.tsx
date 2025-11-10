@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { ThemeToggle } from "@/components/ThemeToggle"; // Import ThemeToggle
 
 const Index = () => {
   const { session, user, isLoading } = useSession();
@@ -31,6 +32,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
+      <div className="absolute top-4 right-4"> {/* Position the theme toggle */}
+        <ThemeToggle />
+      </div>
       <div className="text-center bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
         {session ? (
           <>
