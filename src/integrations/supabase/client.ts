@@ -36,6 +36,29 @@ if (rawUrl) {
   }
 }
 
+// Ensure target host appears to be a Supabase domain in production
+try {
+  if (rawUrl) {
+    const host = new URL(rawUrl).host;
+    const isSupabaseHost = host.endsWith('supabase.co');
+    if (!isSupabaseHost) {
+      const msg = `Supabase URL must point to *.supabase.co, got: ${host}`;
+      if (import.meta.env.PROD) {
+        throw new Error(msg);
+      } else {
+        console.warn(msg);
+      }
+    }
+  }
+} catch (e) {
+  const msg = `Supabase URL validation failed: ${(e as any)?.message ?? e}`;
+  if (import.meta.env.PROD) {
+    throw new Error(msg);
+  } else {
+    console.warn(msg);
+  }
+}
+
 export const supabase = createClient(rawUrl as string, rawAnonKey as string, {
   auth: {
     persistSession: true,
