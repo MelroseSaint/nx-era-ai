@@ -10,7 +10,8 @@ import Dashboard from "./pages/Dashboard";
 import UserApps from "./pages/UserApps";
 import CommunityTemplates from "./pages/CommunityTemplates";
 import VibeCoder from "./pages/VibeCoder";
-import MyProjects from "./pages/MyProjects"; // Import the new MyProjects page
+import MyProjects from "./pages/MyProjects";
+import ProjectDetails from "./pages/ProjectDetails"; // Import the new ProjectDetails page
 import { SessionContextProvider } from "./components/SessionContextProvider";
 import { ThemeProvider } from "@/components/theme-provider";
 
@@ -31,7 +32,8 @@ const App = () => (
               <Route path="/my-apps" element={<UserApps />} />
               <Route path="/community-templates" element={<CommunityTemplates />} />
               <Route path="/vibe-coder" element={<VibeCoder />} />
-              <Route path="/my-projects" element={<MyProjects />} /> {/* Add the MyProjects route */}
+              <Route path="/my-projects" element={<MyProjects />} />
+              <Route path="/my-projects/:projectId" element={<ProjectDetails />} /> {/* Add the ProjectDetails route */}
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

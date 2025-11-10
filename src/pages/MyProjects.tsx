@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { MadeWithDyad } from '@/components/made-with-dyad';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { Eye, Trash2, Code, Download } from 'lucide-react';
+import { Eye, Trash2, Download, Edit } from 'lucide-react'; // Added Edit icon
 import {
   AlertDialog,
   AlertDialogAction,
@@ -164,6 +164,9 @@ const MyProjects = () => {
                       </p>
                     </div>
                     <div className="flex space-x-2 mt-2 sm:mt-0">
+                      <Button variant="outline" size="icon" title="Edit Project" onClick={() => navigate(`/my-projects/${project.id}`)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
                       {project.generated_code && (
                         <Dialog onOpenChange={(open) => {
                           if (open) {
