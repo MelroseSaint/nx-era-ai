@@ -59,7 +59,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   const refreshUserProfile = async () => {
     if (session?.user) {
       const profile = await fetchUserProfile(session.user.id);
-      setUser({ ...session.user, ...profile });
+      setUser(profile ? { ...session.user, ...profile } : session.user);
     }
   };
 
@@ -68,29 +68,31 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     let mounted = true;
 
     // Eagerly get current session to avoid indefinite loading on initial mount
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (!mounted) return;
-      const currentSession = data.session;
-      setSession(currentSession);
-      if (currentSession?.user) {
-        const profile = await fetchUserProfile(currentSession.user.id);
-        setUser({ ...currentSession.user, ...profile });
-      } else {
-        setUser(null);
-      }
-      setIsLoading(false);
-    }).catch(() => {
-      // If getSession fails, still allow app to proceed
-      if (!mounted) return;
-      setIsLoading(false);
-    });
+    supabase.auth.getSession()
+      .then(async ({ data }) => {
+        if (!mounted) return;
+        const currentSession = data.session;
+        setSession(currentSession);
+        if (currentSession?.user) {
+          const profile = await fetchUserProfile(currentSession.user.id);
+          setUser(profile ? { ...currentSession.user, ...profile } : currentSession.user);
+        } else {
+          setUser(null);
+        }
+        setIsLoading(false);
+      })
+      .catch(() => {
+        // If getSession fails, still allow app to proceed
+        if (!mounted) return;
+        setIsLoading(false);
+      });
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
         setSession(currentSession); // Always update session
         if (currentSession?.user) {
           const profile = await fetchUserProfile(currentSession.user.id);
-          setUser({ ...currentSession.user, ...profile });
+          setUser(profile ? { ...currentSession.user, ...profile } : currentSession.user);
           if (event === 'SIGNED_IN') {
             toast.success("Welcome back!");
           }
