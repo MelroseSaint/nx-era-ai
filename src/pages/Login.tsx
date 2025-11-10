@@ -12,19 +12,19 @@ function Login() {
   const { session, isLoading } = useSession();
   const navigate = useNavigate();
 
-  // Removed redundant useEffect for navigation, as SessionContextProvider handles it.
-  // useEffect(() => {
-  //   if (!isLoading && session) {
-  //     navigate('/'); // Redirect to home if already logged in
-  //   }
-  // }, [session, isLoading, navigate]);
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
         <p className="text-lg text-gray-700 dark:text-gray-300">Loading...</p>
       </div>
     );
+  }
+
+  // If not loading and a session exists, the SessionContextProvider should handle navigation.
+  // We explicitly return null here to prevent the Auth component from rendering
+  // if the user is already logged in but somehow still on the /login page.
+  if (session) {
+    return null; // SessionContextProvider will redirect to '/'
   }
 
   return (
