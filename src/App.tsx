@@ -8,7 +8,8 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import UserApps from "./pages/UserApps";
-import CommunityTemplates from "./pages/CommunityTemplates"; // Import the new CommunityTemplates page
+import CommunityTemplates from "./pages/CommunityTemplates";
+import VibeCoder from "./pages/VibeCoder"; // Import the new VibeCoder page
 import { SessionContextProvider } from "./components/SessionContextProvider";
 import { ThemeProvider } from "@/components/theme-provider";
 
@@ -27,7 +28,8 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/my-apps" element={<UserApps />} />
-              <Route path="/community-templates" element={<CommunityTemplates />} /> {/* Add the CommunityTemplates route */}
+              <Route path="/community-templates" element={<CommunityTemplates />} />
+              <Route path="/vibe-coder" element={<VibeCoder />} /> {/* Add the VibeCoder route */}
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
