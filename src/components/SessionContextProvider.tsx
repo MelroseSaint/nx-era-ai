@@ -65,6 +65,26 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
 
   // Effect for handling auth state changes from Supabase
   useEffect(() => {
+    let mounted = true;
+
+    // Eagerly get current session to avoid indefinite loading on initial mount
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!mounted) return;
+      const currentSession = data.session;
+      setSession(currentSession);
+      if (currentSession?.user) {
+        const profile = await fetchUserProfile(currentSession.user.id);
+        setUser({ ...currentSession.user, ...profile });
+      } else {
+        setUser(null);
+      }
+      setIsLoading(false);
+    }).catch(() => {
+      // If getSession fails, still allow app to proceed
+      if (!mounted) return;
+      setIsLoading(false);
+    });
+
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
         setSession(currentSession); // Always update session
@@ -86,6 +106,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
 
     return () => {
       authListener.subscription.unsubscribe();
+      mounted = false;
     };
   }, []);
 
