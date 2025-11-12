@@ -2,17 +2,13 @@ import { Toaster as Sonner } from "sonner"; // Use Sonner for toasts
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import React from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import UserApps from "./pages/UserApps";
-import CommunityTemplates from "./pages/CommunityTemplates";
-import VibeCoder from "./pages/VibeCoder";
 import Products from "./pages/Products";
-import Studio from "./pages/Studio";
-import MyProjects from "./pages/MyProjects";
-import ProjectDetails from "./pages/ProjectDetails";
 import TermsOfService from "./pages/TermsOfService";
 import SharePreview from "./pages/SharePreview";
 import { SessionContextProvider } from "./components/SessionContextProvider";
@@ -20,14 +16,19 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { ThemeProvider } from "@/components/theme-provider"; // Re-enabled ThemeProvider
 import HeaderNav from "@/components/HeaderNav";
 import LoginBanner from "@/components/LoginBanner";
-import AIHub from "./pages/AIHub";
 import Credits from "./pages/Credits";
-import AdminDashboard from "./pages/AdminDashboard";
 import SystemControl from "./pages/SystemControl";
 import Settings from "./pages/Settings";
 import ProfileSettings from "./pages/ProfileSettings";
 import ResetPassword from "./pages/ResetPassword";
 import AuthDiagnostics from "./pages/AuthDiagnostics";
+const CommunityTemplates = React.lazy(() => import("./pages/CommunityTemplates"));
+const VibeCoder = React.lazy(() => import("./pages/VibeCoder"));
+const Studio = React.lazy(() => import("./pages/Studio"));
+const MyProjects = React.lazy(() => import("./pages/MyProjects"));
+const ProjectDetails = React.lazy(() => import("./pages/ProjectDetails"));
+const AIHub = React.lazy(() => import("./pages/AIHub"));
+const AdminDashboard = React.lazy(() => import("./pages/AdminDashboard"));
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
             {/* App Header */}
             <HeaderNav />
             <LoginBanner />
+            <React.Suspense fallback={<div className="p-4 text-foreground">Loading...</div>}>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
@@ -70,6 +72,7 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </React.Suspense>
             {/* App Footer with quick links */}
             <footer className="w-full bg-accent text-accent-foreground mt-8">
               <div className="container mx-auto flex flex-col md:flex-row items-center justify-between py-4 px-4 gap-2">

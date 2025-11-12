@@ -4,26 +4,18 @@ import { createClient } from '@supabase/supabase-js';
 const rawUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
 const rawAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim();
 
-// Strict guards: fail loudly in production if env is missing or malformed
+// Strict guards: report issues without crashing in production
 const missingEnv = !rawUrl || !rawAnonKey;
 const invalidScheme = rawUrl && !rawUrl.startsWith('https://');
 
 if (missingEnv) {
   const msg = 'Supabase configuration error: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY must be set.';
-  if (import.meta.env.PROD) {
-    throw new Error(msg);
-  } else {
-    console.warn(msg);
-  }
+  console.warn(msg);
 }
 
 if (invalidScheme) {
   const msg = `Supabase URL appears invalid: ${rawUrl}. Expected https://...`;
-  if (import.meta.env.PROD) {
-    throw new Error(msg);
-  } else {
-    console.warn(msg);
-  }
+  console.warn(msg);
 }
 
 // Helpful runtime debug: log target domain without exposing secrets
@@ -43,23 +35,18 @@ try {
     const isSupabaseHost = host.endsWith('supabase.co');
     if (!isSupabaseHost) {
       const msg = `Supabase URL must point to *.supabase.co, got: ${host}`;
-      if (import.meta.env.PROD) {
-        throw new Error(msg);
-      } else {
-        console.warn(msg);
-      }
+      console.warn(msg);
     }
   }
 } catch (e) {
   const msg = `Supabase URL validation failed: ${(e as any)?.message ?? e}`;
-  if (import.meta.env.PROD) {
-    throw new Error(msg);
-  } else {
-    console.warn(msg);
-  }
+  console.warn(msg);
 }
 
-export const supabase = createClient(rawUrl as string, rawAnonKey as string, {
+const safeUrl = (rawUrl && rawUrl.startsWith('http')) ? rawUrl : 'https://example.supabase.co';
+const safeAnon = rawAnonKey || 'missing-anon-key';
+
+export const supabase = createClient(safeUrl as string, safeAnon as string, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,

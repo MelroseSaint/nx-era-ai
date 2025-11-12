@@ -12,6 +12,17 @@ function Login() {
   const { session, isLoading } = useSession();
   const [view, setView] = useState<'sign_in' | 'sign_up' | 'magic_link' | 'forgotten_password'>('sign_in');
   const navigate = useNavigate();
+  const rawUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
+  const anon = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim();
+  const invalidScheme = rawUrl ? !rawUrl.startsWith('https://') : false;
+  let notSupabaseHost = false;
+  try {
+    if (rawUrl) {
+      const host = new URL(rawUrl).host;
+      notSupabaseHost = !host.endsWith('supabase.co');
+    }
+  } catch {}
+  const showEnvWarning = !rawUrl || !anon || invalidScheme || notSupabaseHost;
 
   // If still loading, show a loading message
   if (isLoading) {
@@ -37,6 +48,21 @@ function Login() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
       <div className="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
+        {showEnvWarning && (
+          <div className="mb-4 rounded border border-red-300 bg-red-50 p-3 text-sm text-red-700">
+            <p className="font-medium">Configuration issue</p>
+            {(!rawUrl || !anon) && (
+              <p>Missing Vercel env vars VITE_SUPABASE_URL and/or VITE_SUPABASE_ANON_KEY.</p>
+            )}
+            {invalidScheme && (
+              <p>VITE_SUPABASE_URL must start with https://</p>
+            )}
+            {notSupabaseHost && (
+              <p>VITE_SUPABASE_URL must point to *.supabase.co</p>
+            )}
+            <p>Update Vercel envs and redeploy.</p>
+          </div>
+        )}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome</h2>
           <Button variant="ghost" onClick={() => navigate('/')}>Home</Button>
