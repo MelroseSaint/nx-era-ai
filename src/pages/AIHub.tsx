@@ -28,7 +28,7 @@ const AIHub: React.FC = () => {
   const [activeTab, setActiveTab] = React.useState<"html" | "css" | "js">("html");
   const [html, setHtml] = React.useState<string>("<div class='p-4'>\n  <h1>Hello NXE AI</h1>\n  <p>Edit code to see live preview.</p>\n</div>");
   const [css, setCss] = React.useState<string>("body { font-family: system-ui, sans-serif; }\n h1 { color: #8B5CF6; }\n p { color: #94A3B8; }");
-  const [js, setJs] = React.useState<string>("console.log('Preview ready');");
+  const [js, setJs] = React.useState<string>("");
 
   const { theme } = useTheme();
   const [iframeVars, setIframeVars] = React.useState<string>("--background: 222.2 84% 4.9%;\n--foreground: 210 40% 98%;");

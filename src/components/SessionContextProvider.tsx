@@ -89,7 +89,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     supabase.auth.getSession()
       .then(async ({ data }) => {
         if (!mounted) return;
-        console.debug('[auth] getSession resolved', { hasSession: !!data.session });
+        
         const currentSession = data.session;
         setSession(currentSession);
         if (currentSession?.user) {
@@ -111,7 +111,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
-        console.debug('[auth] onAuthStateChange', { event, hasSession: !!currentSession });
+        
         setSession(currentSession); // Always update session
         if (currentSession?.user) {
           let profile = await fetchUserProfile(currentSession.user.id);

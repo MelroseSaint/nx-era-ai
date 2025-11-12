@@ -17,7 +17,7 @@ type FileNode = {
 const initialFiles: FileNode[] = [
   { path: 'index.html', content: `<!doctype html><html><head><meta charset="utf-8"/><title>App</title></head><body><h1>Hello NXE</h1><div id="app"></div></body></html>` },
   { path: 'styles.css', content: `body{font-family:Inter, system-ui; padding:1rem}` },
-  { path: 'script.js', content: `const el = document.getElementById('app'); el.textContent = 'Ready to code!'; console.log('App started');` },
+  { path: 'script.js', content: `const el = document.getElementById('app'); el.textContent = 'Ready to code!';` },
 ];
 
 const languageFromPath = (path: string) => {
@@ -73,7 +73,7 @@ export default function Studio() {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed.files)) setFiles(parsed.files);
         if (typeof parsed.projectName === 'string') setProjectName(parsed.projectName);
-      } catch {}
+      } catch (_) { void 0; }
     }
   }, []);
 
@@ -159,10 +159,10 @@ export default function Studio() {
   };
 
   const toastSuccess = (m: string) => {
-    try { const { toast } = require('sonner'); toast.success(m); } catch { console.log(m); }
+    import('sonner').then(({ toast }) => toast.success(m)).catch(() => void 0);
   };
   const toastError = (m: string) => {
-    try { const { toast } = require('sonner'); toast.error(m); } catch { console.error(m); }
+    import('sonner').then(({ toast }) => toast.error(m)).catch(() => console.error(m));
   };
 
   // Access gating for guests and loading state
