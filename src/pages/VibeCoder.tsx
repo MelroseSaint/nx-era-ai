@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Loader2, Code, Download, Eye, Play, Share2 } from 'lucide-react';
 import Editor from '@monaco-editor/react';
+import AIAssistantPanel from '@/components/AIAssistantPanel';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useAI } from '@/hooks/useAI';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,6 +41,7 @@ const VibeCoder = () => {
     try { return document.documentElement.classList.contains('dark'); } catch { return true; }
   });
   const { aiAssist, aiExplain, aiFix } = useAI(user?.id);
+  const [assistantOpen, setAssistantOpen] = useState<boolean>(true);
 
   const buildSandboxHtml = React.useCallback((code: string) => {
     const isHtml = /<html|<!doctype/i.test(code);
@@ -394,6 +396,7 @@ const VibeCoder = () => {
         <Button size="sm" variant="outline" onClick={doFix}>Fix Error</Button>
         <Button size="sm" variant="secondary" onClick={handleDownloadCode}><Download className="mr-2 h-4 w-4"/> Save (ZIP)</Button>
         <div className="ml-auto flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={() => setAssistantOpen(v=>!v)}>{assistantOpen ? 'Hide' : 'Show'} Chatbot</Button>
           <ThemeToggle />
         </div>
       </div>
@@ -474,7 +477,7 @@ const VibeCoder = () => {
               </Button>
             </div>
 
-            {/* Right preview + console area */}
+            {/* Right preview + console + assistant */}
             <div className="rounded-xl overflow-hidden border bg-white dark:bg-gray-900">
               <div className="flex items-center justify-between px-3 py-2 bg-muted dark:bg-gray-800/60 border-b">
                 <span className="font-semibold flex items-center gap-2"><Eye className="h-4 w-4"/> App Preview</span>
@@ -535,6 +538,12 @@ const VibeCoder = () => {
                   consoleLogs.map((l, i) => <div key={i}>$ {l}</div>)
                 )}
               </div>
+
+              {assistantOpen && (
+                <div className="border-t">
+                  <AIAssistantPanel />
+                </div>
+              )}
             </div>
           </div>
 
