@@ -35,9 +35,8 @@ export function useAI(userId?: string | null) {
   }, [withCredits]);
 
   const aiFix = useCallback(async (code: string, errorMsg?: string) => {
-    return withCredits(() => refactor(code, errorMsg), 2);
+    return withCredits(() => refactor(code, errorMsg), 1);
   }, [withCredits]);
 
   return { aiAssist, aiExplain, aiFix };
 }
-

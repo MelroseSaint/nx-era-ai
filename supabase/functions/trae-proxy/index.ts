@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
-// Support comma-separated origins via ALLOWED_ORIGINS or single ALLOWED_ORIGIN, fallback to '*'
+// Reuse permissive CORS with optional origin allow-list
 const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') ?? Deno.env.get('ALLOWED_ORIGIN') ?? '*')
   .split(',')
   .map((s) => s.trim())
@@ -14,14 +14,9 @@ const ADMIN_EMAILS = (Deno.env.get('ADMIN_EMAILS') ?? 'monroedoses@gmail.com')
 
 function patternToRegex(pattern: string): RegExp | null {
   if (!pattern) return null;
-  if (pattern === '*') return /^.*$/; // match anything
-  // Escape regex special chars, then allow '*' wildcard
+  if (pattern === '*') return /^.*$/;
   const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\\\*/g, '.*');
-  try {
-    return new RegExp(`^${escaped}$`);
-  } catch (_e) {
-    return null;
-  }
+  try { return new RegExp(`^${escaped}$`); } catch { return null; }
 }
 
 function originMatches(origin: string | null, patterns: string[]): boolean {
@@ -56,15 +51,10 @@ serve(async (req) => {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
+      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     );
 
     const { data: { user } } = await supabaseClient.auth.getUser();
-
     if (!user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
@@ -72,35 +62,40 @@ serve(async (req) => {
       });
     }
 
-    // Restrict generation endpoint to admin IPs only (for testing / early access)
-    // You would replace 'YOUR_ADMIN_IP_ADDRESS' with actual IP addresses
-    // For now, we'll allow all for initial testing, but keep this in mind for production.
-    // const clientIp = req.headers.get('X-Forwarded-For') || req.headers.get('Client-IP');
-    // const adminIps = ['YOUR_ADMIN_IP_ADDRESS_1', 'YOUR_ADMIN_IP_ADDRESS_2'];
-    // if (!adminIps.includes(clientIp)) {
-    //   return new Response(JSON.stringify({ error: 'Access denied: Not an admin IP' }), {
-    //     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    //     status: 403,
-    //   });
-    // }
+    const body = await req.json();
+    const kind: string = body?.kind || 'assist';
+    const prompt: string = body?.prompt || '';
+    const code: string = body?.code || '';
+    const instructions: string = body?.instructions || '';
+    const context: string = body?.context || '';
+    const temperature: number = typeof body?.temperature === 'number' ? body.temperature : (kind === 'explain' ? 0.4 : kind === 'refactor' ? 0.6 : 0.8);
+    const max_tokens: number = typeof body?.max_tokens === 'number' ? body.max_tokens : 2000;
 
-    const { prompt } = await req.json();
-
-    if (!prompt) {
-      return new Response(JSON.stringify({ error: 'Prompt is required' }), {
-        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
-        status: 400,
-      });
+    // Basic input validation
+    if (kind === 'assist') {
+      if (!prompt || typeof prompt !== 'string') {
+        return new Response(JSON.stringify({ error: 'Prompt is required' }), {
+          headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+          status: 400,
+        });
+      }
+    } else if (kind === 'explain') {
+      if (!code || typeof code !== 'string') {
+        return new Response(JSON.stringify({ error: 'Code is required for explain' }), {
+          headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+          status: 400,
+        });
+      }
+    } else if (kind === 'refactor') {
+      if (!code || typeof code !== 'string') {
+        return new Response(JSON.stringify({ error: 'Code is required for refactor' }), {
+          headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+          status: 400,
+        });
+      }
     }
 
-    // Basic input validation to avoid abuse and excessive payloads
-    if (typeof prompt !== 'string' || prompt.trim().length > 2000) {
-      return new Response(JSON.stringify({ error: 'Prompt must be a string under 2000 characters' }), {
-        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
-        status: 400,
-      });
-    }
-    // Load caller profile to enforce credits (unless admin)
+    // Load profile for credit gating (no decrement here; client handles decrement)
     const { data: profile } = await supabaseClient
       .from('profiles')
       .select('id, email, credits, role, is_admin')
@@ -117,10 +112,10 @@ serve(async (req) => {
       });
     }
 
-    // Call OpenRouter
     const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
     const OPENROUTER_MODEL = Deno.env.get('OPENROUTER_MODEL') ?? 'openrouter/auto';
     const OPENROUTER_URL = Deno.env.get('OPENROUTER_URL') ?? 'https://openrouter.ai/api/v1/chat/completions';
+
     if (!OPENROUTER_API_KEY) {
       return new Response(JSON.stringify({ error: 'OpenRouter API key not configured', code: 'NO_OPENROUTER_API_KEY' }), {
         headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
@@ -128,11 +123,21 @@ serve(async (req) => {
       });
     }
 
-    const promptText = `Generate a full-stack application scaffold based on the following description.
-Provide both frontend (React/TypeScript/Tailwind CSS) and backend (Node.js/Express with Supabase integration) code.
-Return ONLY valid JSON with keys "frontend" and "backend", with string values containing the code.
-Example: {"frontend": "// React code...", "backend": "// Node.js code..."}
-User description: "${prompt}"`;
+    let finalPrompt = '';
+    if (kind === 'assist') {
+      finalPrompt = context && context.trim().length > 0
+        ? `${prompt}\n\nContext:\n${context}`
+        : prompt;
+    } else if (kind === 'explain') {
+      finalPrompt = `Explain the following code in concise terms, list any bugs or risks, and provide suggestions.\n\nCODE:\n${code}`;
+    } else if (kind === 'refactor') {
+      finalPrompt = `Refactor or fix the following code. ${instructions ? `Instructions: ${instructions}.` : ''} Return only the improved code, with no commentary.\n\nCODE:\n${code}`;
+    } else {
+      return new Response(JSON.stringify({ error: 'Unsupported kind' }), {
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
 
     const response = await fetch(OPENROUTER_URL, {
       method: 'POST',
@@ -143,11 +148,11 @@ User description: "${prompt}"`;
       body: JSON.stringify({
         model: OPENROUTER_MODEL,
         messages: [
-          { role: 'system', content: 'You are a helpful coding assistant. Return valid JSON only.' },
-          { role: 'user', content: promptText },
+          { role: 'system', content: 'You are a helpful coding assistant. Be concise and practical.' },
+          { role: 'user', content: finalPrompt },
         ],
-        temperature: 0.8,
-        max_tokens: 2000,
+        temperature,
+        max_tokens,
       }),
     });
 
@@ -155,7 +160,7 @@ User description: "${prompt}"`;
       let detail: any = null;
       try { detail = await response.json(); } catch {}
       const msg = detail?.error || detail?.message || 'OpenRouter API error';
-      return new Response(JSON.stringify({ error: 'Failed to generate code', details: msg }), {
+      return new Response(JSON.stringify({ error: 'Failed AI request', details: msg }), {
         headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
         status: 502,
       });
@@ -170,41 +175,13 @@ User description: "${prompt}"`;
       });
     }
 
-    // Parse JSON output; allow fenced JSON
-    let parsedCode: any;
-    try {
-      const match = generatedText.match(/```json\n([\s\S]*?)\n```/);
-      const json = match ? match[1] : generatedText;
-      parsedCode = JSON.parse(json);
-    } catch (_e) {
-      return new Response(JSON.stringify({ error: 'AI generated malformed JSON' }), {
-        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
-        status: 500,
-      });
-    }
-
-    // Decrement credits if not admin
-    if (!isAdmin) {
-      const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-      const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-      const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
-      const newCredits = Math.max(0, credits - 1);
-      await supabaseAdmin
-        .from('profiles')
-        .update({ credits: newCredits })
-        .eq('id', user.id);
-      await supabaseAdmin
-        .from('credit_transactions')
-        .insert({ user_id: user.id, type: 'spend', amount: 1, note: 'AI generate-code' });
-    }
-
-    return new Response(JSON.stringify({ generatedCode: parsedCode }), {
+    return new Response(JSON.stringify({ output: generatedText }), {
       headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       status: 200,
     });
 
   } catch (error) {
-    console.error('Edge Function error:', error);
+    console.error('trae-proxy error:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(JSON.stringify({ error: message }), {
       headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },

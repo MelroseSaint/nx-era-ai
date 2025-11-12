@@ -8,6 +8,7 @@ import AdminBadge from "@/components/AdminBadge";
 import { Menu, User, Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { isAdmin } from "@/lib/credits";
 
 const HeaderNav: React.FC = () => {
   const { user } = useSession();
@@ -39,11 +40,7 @@ const HeaderNav: React.FC = () => {
   const linkBase = "text-foreground/90 hover:text-primary transition-colors";
   const linkActive = "text-foreground";
 
-  const isAdminUser = !!user && (
-    user.is_admin === true ||
-    user.role === 'admin' ||
-    (user.email?.toLowerCase() === 'monroedoses@gmail.com')
-  );
+  const isAdminUser = isAdmin(user);
 
   return (
     <header className="w-full bg-background text-foreground border-b border-border">
@@ -106,6 +103,17 @@ const HeaderNav: React.FC = () => {
           {isAdminUser && <AdminBadge />}
           {user && (
             <span className="hidden lg:inline text-xs sm:text-sm text-muted-foreground">{usernameOrEmail()}</span>
+          )}
+          {/* Plan + Credits display */}
+          {user && (
+            <div className="hidden md:flex items-center gap-2 mr-2">
+              <span className="text-xs text-muted-foreground">Plan: {user.role || 'user'}</span>
+              <span className="text-xs">•</span>
+              <span className="text-xs text-muted-foreground">Credits: {typeof user.credits === 'number' ? user.credits : 0}</span>
+              {!isAdminUser && (Number(user.credits ?? 0) <= 0) && (
+                <NavLink to="/credits" className={({ isActive }) => `inline-block ml-2 px-2 py-1 rounded text-xs ${isActive ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-accent text-foreground'}`}>Upgrade</NavLink>
+              )}
+            </div>
           )}
           <div className="flex items-center gap-2">
             {user && (

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "sonner"; // Import toast from sonner
+import { isAdmin } from '@/lib/credits';
 
 interface GatedContentProps {
   children: React.ReactNode;
@@ -43,7 +44,7 @@ const GatedContent: React.FC<GatedContentProps> = ({ children, fallbackMessage =
     );
   }
 
-  if (user.is_subscriber) {
+  if (isAdmin(user) || user.is_subscriber) {
     return <>{children}</>;
   }
 

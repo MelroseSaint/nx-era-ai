@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { startCheckout } from '@/integrations/stripe/client';
-import { PRICE_PRO } from '@/integrations/stripe/prices';
+import { PRICE_PRO, PRICE_DEV } from '@/integrations/stripe/prices';
 
 const Dashboard = () => {
   const { user, isLoading, isProfileLoading, refreshUserProfile } = useSession();
@@ -96,6 +96,11 @@ const Dashboard = () => {
         <CardHeader>
           <CardTitle className="text-3xl font-bold text-center text-foreground">User Dashboard</CardTitle>
           <CardDescription className="text-center text-muted-foreground">Manage your profile information.</CardDescription>
+          {/* Plan & Credits badges */}
+          <div className="mt-3 flex items-center justify-center gap-2">
+            <span className="px-2 py-1 rounded bg-muted text-xs">Plan: {user.role || 'user'}</span>
+            <span className="px-2 py-1 rounded bg-muted text-xs">Credits: {typeof user.credits === 'number' ? user.credits : 0}</span>
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
@@ -119,12 +124,28 @@ const Dashboard = () => {
                 startCheckout(
                   PRICE_PRO,
                   'subscription',
-                  { userId: user.id },
+                  { userId: user.id, plan: 'Pro' },
                   user?.email ?? undefined
                 );
               }}
             >
               Upgrade to Pro
+            </Button>
+          )}
+          {!user.is_subscriber && (
+            <Button
+              className="w-full bg-secondary text-foreground"
+              type="button"
+              onClick={() => {
+                startCheckout(
+                  PRICE_DEV,
+                  'subscription',
+                  { userId: user.id, plan: 'Dev' },
+                  user?.email ?? undefined
+                );
+              }}
+            >
+              Upgrade to Dev
             </Button>
           )}
 

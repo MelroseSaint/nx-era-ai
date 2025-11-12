@@ -9,6 +9,7 @@ import { Users, Activity, ShieldAlert, LineChart, Coins } from "lucide-react";
 import { ResponsiveContainer, LineChart as RLineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { isAdmin } from "@/lib/credits";
 
 const AdminDashboard: React.FC = () => {
   const { user, isLoading } = useSession();
@@ -24,7 +25,7 @@ const AdminDashboard: React.FC = () => {
     return <div className="container mx-auto py-6 px-4 text-muted-foreground">Loading...</div>;
   }
 
-  if (!user || !(user.is_admin || user.role === 'admin')) {
+  if (!user || !isAdmin(user)) {
     return (
       <div className="container mx-auto py-6 px-4">
         <Card className="max-w-xl mx-auto bg-card text-card-foreground">

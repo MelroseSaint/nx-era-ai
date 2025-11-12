@@ -67,6 +67,20 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     }
   };
 
+  const ensureAdminBootstrap = async (userId: string, email: string, profile: any) => {
+    const adminList = (import.meta.env.VITE_ADMIN_EMAILS ?? 'monroedoses@gmail.com')
+      .split(',')
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean);
+    const emailLower = (email || '').toLowerCase();
+    if (adminList.includes(emailLower) && (!(profile?.is_admin) || profile?.role !== 'Dev')) {
+      await supabase
+        .from('profiles')
+        .update({ is_admin: true, role: 'Dev', is_subscriber: true })
+        .eq('id', userId);
+    }
+  };
+
   // Effect for handling auth state changes from Supabase
   useEffect(() => {
     let mounted = true;
@@ -79,7 +93,9 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
         const currentSession = data.session;
         setSession(currentSession);
         if (currentSession?.user) {
-          const profile = await fetchUserProfile(currentSession.user.id);
+          let profile = await fetchUserProfile(currentSession.user.id);
+          await ensureAdminBootstrap(currentSession.user.id, currentSession.user.email ?? '', profile);
+          profile = await fetchUserProfile(currentSession.user.id);
           setUser(profile ? { ...currentSession.user, ...profile } : currentSession.user);
         } else {
           setUser(null);
@@ -98,7 +114,9 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
         console.debug('[auth] onAuthStateChange', { event, hasSession: !!currentSession });
         setSession(currentSession); // Always update session
         if (currentSession?.user) {
-          const profile = await fetchUserProfile(currentSession.user.id);
+          let profile = await fetchUserProfile(currentSession.user.id);
+          await ensureAdminBootstrap(currentSession.user.id, currentSession.user.email ?? '', profile);
+          profile = await fetchUserProfile(currentSession.user.id);
           setUser(profile ? { ...currentSession.user, ...profile } : currentSession.user);
           if (event === 'SIGNED_IN') {
             toast.success("Welcome back!");

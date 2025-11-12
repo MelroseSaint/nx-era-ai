@@ -61,3 +61,28 @@ const { data, error } = await supabase.storage
 const avatarUrl = data?.signedUrl;
 ```
 - Avoid storing signed URLs in DB (they expire); store object paths and resolve at runtime.
+
+OpenRouter AI and Stripe Plans
+- Set environment variables for OpenRouter AI requests:
+  - `OPENROUTER_API_KEY` (server function secret for Supabase edge functions)
+  - Optional: `OPENROUTER_MODEL` (default `openrouter/auto`)
+  - Optional: `OPENROUTER_URL` (default `https://openrouter.ai/api/v1/chat/completions`)
+- Stripe pricing environment:
+  - `VITE_STRIPE_PRICE_PRO` and `VITE_STRIPE_PRICE_DEV` must be set to price IDs from your Stripe dashboard.
+- Webhook function: `supabase/functions/stripe-webhook/`
+  - Deploy and set secrets: `STRIPE_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`.
+  - Handles `checkout.session.completed`, `invoice.paid`, `invoice.payment_failed`, `customer.subscription.deleted` to update `profiles.role`, `profiles.is_subscriber`, and stack `credits`.
+- Client checkout:
+  - `src/pages/Credits.tsx` and `src/pages/Dashboard.tsx` include Pro/Dev upgrade buttons using `startCheckout(...)` with `plan` metadata.
+- Credits gating:
+  - Server: `supabase/functions/generate-code/` enforces credits and admin bypass for scaffolding.
+  - Server: `supabase/functions/trae-proxy/` enforces credits and admin bypass for Assist/Explain/Refactor (no decrement; client handles decrement).
+  - Client: `src/hooks/useAI.ts` uses 1 credit per AI action and shows friendly messages when out of credits.
+
+Deploy AI Proxy Function (OpenRouter)
+- Set the secrets:
+  - `supabase secrets set OPENROUTER_API_KEY=<your-openrouter-key>`
+  - Optional: `supabase secrets set OPENROUTER_MODEL=openrouter/auto`
+  - Optional: `supabase secrets set OPENROUTER_URL=https://openrouter.ai/api/v1/chat/completions`
+- Ensure `SUPABASE_URL` and `SUPABASE_ANON_KEY` secrets are set.
+- Deploy: `supabase functions deploy trae-proxy`

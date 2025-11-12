@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AlertTriangle, Coins, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 import { toast } from "sonner";
 import { startCheckout } from "@/integrations/stripe/client";
-import { PRICE_PRO, PRICE_CREDITS_100, PRICE_CREDITS_500, PRICE_CREDITS_1000 } from "@/integrations/stripe/prices";
+import { PRICE_PRO, PRICE_DEV, PRICE_CREDITS_100, PRICE_CREDITS_500, PRICE_CREDITS_1000 } from "@/integrations/stripe/prices";
 
 const Credits: React.FC = () => {
   const { user } = useSession();
@@ -99,7 +99,15 @@ const Credits: React.FC = () => {
       toast.error('Pro subscription price is not configured.');
       return;
     }
-    startCheckout(PRICE_PRO, 'subscription', { userId: user!.id }, user?.email ?? undefined);
+    startCheckout(PRICE_PRO, 'subscription', { userId: user!.id, plan: 'Pro' }, user?.email ?? undefined);
+  };
+
+  const upgradeToDev = () => {
+    if (!PRICE_DEV || PRICE_DEV.startsWith('price_mock')) {
+      toast.error('Dev subscription price is not configured.');
+      return;
+    }
+    startCheckout(PRICE_DEV, 'subscription', { userId: user!.id, plan: 'Dev' }, user?.email ?? undefined);
   };
 
   if (!user) {
@@ -160,6 +168,7 @@ const Credits: React.FC = () => {
                 <Button className="bg-secondary hover:bg-accent text-foreground" onClick={() => purchasePack(1000)}>Buy 1000</Button>
               </div>
               <Button className="bg-primary hover:bg-primary/80 text-primary-foreground" onClick={upgradeToPro}>Upgrade to Pro</Button>
+              <Button className="bg-secondary hover:bg-accent text-foreground" onClick={upgradeToDev}>Upgrade to Dev</Button>
             </div>
           </CardContent>
         </Card>
