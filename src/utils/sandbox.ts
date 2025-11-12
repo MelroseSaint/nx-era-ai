@@ -3,8 +3,10 @@ export function buildSandboxHtml(opts: {
   css?: string;
   js?: string;
   title?: string;
+  // The expected parent window origin for postMessage; defaults to '*'
+  targetOrigin?: string;
 }): string {
-  const { html = '', css = '', js = '', title = 'NXE Preview' } = opts;
+  const { html = '', css = '', js = '', title = 'NXE Preview', targetOrigin = '*' } = opts;
 
   const baseHtml = html && /<html|<!doctype/i.test(html)
     ? html
@@ -20,7 +22,7 @@ export function buildSandboxHtml(opts: {
             const args = Array.from(arguments).map(a => {
               try { return typeof a === 'object' ? JSON.stringify(a) : String(a); } catch { return String(a); }
             });
-            window.parent.postMessage({ type: 'console', level: l, args }, '*');
+            window.parent.postMessage({ type: 'console', level: l, args }, '${targetOrigin}');
             orig.apply(console, arguments);
           };
         });
@@ -28,7 +30,7 @@ export function buildSandboxHtml(opts: {
         const block = (name) => {
           return function(){
             const msg = name + ' is disabled in NXE sandbox';
-            window.parent.postMessage({ type: 'error', message: msg }, '*');
+            window.parent.postMessage({ type: 'error', message: msg }, '${targetOrigin}');
             throw new Error(msg);
           }
         };
@@ -44,7 +46,7 @@ export function buildSandboxHtml(opts: {
         // Prevent navigation and opening new windows
         try { window.open = block('window.open'); } catch {}
         window.addEventListener('error', (e) => {
-          window.parent.postMessage({ type: 'error', message: e.message, stack: e.error?.stack }, '*');
+          window.parent.postMessage({ type: 'error', message: e.message, stack: e.error?.stack }, '${targetOrigin}');
         });
       })();
     </script>`;

@@ -42,6 +42,8 @@ export default function Studio() {
 
   React.useEffect(() => {
     const handler = (e: MessageEvent) => {
+      // Only accept messages from same-origin sandbox
+      if (e.origin !== window.location.origin) return;
       const data = e.data;
       if (data?.type === 'console') {
         setConsoleLines(prev => [...prev, `[${data.level}] ${data.args.join(' ')}`].slice(-500));
@@ -79,7 +81,7 @@ export default function Studio() {
     const html = files.find(f => f.path === 'index.html')?.content || '';
     const css = files.find(f => f.path === 'styles.css')?.content || '';
     const js = files.find(f => f.path === 'script.js')?.content || '';
-    const full = buildSandboxHtml({ html, css, js, title: 'NXE Preview' });
+    const full = buildSandboxHtml({ html, css, js, title: 'NXE Preview', targetOrigin: window.location.origin });
     const url = makeSandboxUrl(full);
     setPreviewUrl(url);
     setConsoleLines([]);
@@ -127,7 +129,7 @@ export default function Studio() {
       const html = files.find(f => f.path === 'index.html')?.content || '';
       const css = files.find(f => f.path === 'styles.css')?.content || '';
       const js = files.find(f => f.path === 'script.js')?.content || '';
-      const full = buildSandboxHtml({ html, css, js, title: projectName.trim() || 'NXE Project' });
+      const full = buildSandboxHtml({ html, css, js, title: projectName.trim() || 'NXE Project', targetOrigin: window.location.origin });
       const payload = { name: projectName.trim(), generated_code: { frontend: full, backend: '/* Studio backend not used */' } };
       const { data, error } = await supabase.from('user_projects').insert(payload).select().single();
       if (error) throw error;
@@ -144,7 +146,7 @@ export default function Studio() {
       const html = files.find(f => f.path === 'index.html')?.content || '';
       const css = files.find(f => f.path === 'styles.css')?.content || '';
       const js = files.find(f => f.path === 'script.js')?.content || '';
-      const full = buildSandboxHtml({ html, css, js, title: projectName.trim() || 'NXE Project' });
+      const full = buildSandboxHtml({ html, css, js, title: projectName.trim() || 'NXE Project', targetOrigin: window.location.origin });
       const payload = { name: projectName.trim(), generated_code: { frontend: full, backend: '/* Studio backend not used */' }, is_shared: true };
       const { data, error } = await supabase.from('user_projects').insert(payload).select().single();
       if (error) throw error;

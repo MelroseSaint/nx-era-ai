@@ -331,7 +331,7 @@ const ProjectDetails = () => {
                   )}
                 </div>
                 {previewUrl ? (
-                  <iframe title="Preview" src={previewUrl} className="w-full h-[500px]" />
+                  <iframe title="Preview" src={previewUrl} className="w-full h-[500px]" sandbox="allow-scripts" />
                 ) : (
                   <div className="p-4 text-sm text-gray-700">No preview available.</div>
                 )}

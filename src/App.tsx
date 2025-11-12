@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import UserApps from "./pages/UserApps";
 import CommunityTemplates from "./pages/CommunityTemplates";
 import VibeCoder from "./pages/VibeCoder";
+import Products from "./pages/Products";
 import Studio from "./pages/Studio";
 import MyProjects from "./pages/MyProjects";
 import ProjectDetails from "./pages/ProjectDetails";
@@ -22,6 +23,7 @@ import LoginBanner from "@/components/LoginBanner";
 import AIHub from "./pages/AIHub";
 import Credits from "./pages/Credits";
 import AdminDashboard from "./pages/AdminDashboard";
+import SystemControl from "./pages/SystemControl";
 import Settings from "./pages/Settings";
 import ProfileSettings from "./pages/ProfileSettings";
 import ResetPassword from "./pages/ResetPassword";
@@ -51,12 +53,14 @@ const App = () => (
               <Route path="/my-apps" element={<ProtectedRoute><UserApps /></ProtectedRoute>} />
               <Route path="/community-templates" element={<ProtectedRoute><CommunityTemplates /></ProtectedRoute>} />
               <Route path="/vibe-coder" element={<ProtectedRoute><VibeCoder /></ProtectedRoute>} />
+              <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
               <Route path="/ai-hub" element={<ProtectedRoute><AIHub /></ProtectedRoute>} />
               <Route path="/studio" element={<ProtectedRoute><Studio /></ProtectedRoute>} />
               <Route path="/my-projects" element={<ProtectedRoute><MyProjects /></ProtectedRoute>} />
               <Route path="/my-projects/:projectId" element={<ProtectedRoute><ProjectDetails /></ProtectedRoute>} />
               <Route path="/credits" element={<ProtectedRoute><Credits /></ProtectedRoute>} />
               <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/system-control" element={<ProtectedRoute><SystemControl /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               <Route path="/profile-settings" element={<ProtectedRoute><ProfileSettings /></ProtectedRoute>} />
               <Route path="/reset-password" element={<ResetPassword />} />

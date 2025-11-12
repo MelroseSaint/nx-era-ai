@@ -51,7 +51,7 @@ export default function SharePreview(){
           const html = files.find((f:any)=>f.path==='index.html')?.content || '';
           const css = files.find((f:any)=>f.path==='styles.css')?.content || '';
           const js = files.find((f:any)=>f.path==='script.js')?.content || '';
-          full = buildSandboxHtml({ html, css, js, title: data.name || 'NXE Share' });
+          full = buildSandboxHtml({ html, css, js, title: data.name || 'NXE Share', targetOrigin: window.location.origin });
         }
 
         if (!full) throw new Error('No previewable content found in project');

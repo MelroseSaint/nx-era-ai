@@ -4,6 +4,7 @@ import React from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useSession } from "@/components/SessionContextProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import AdminBadge from "@/components/AdminBadge";
 import { Menu, User, Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -89,6 +90,11 @@ const HeaderNav: React.FC = () => {
               Admin
             </NavLink>
           )}
+          {isAdminUser && (
+            <NavLink to="/system-control" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""} hover:underline underline-offset-4`}>
+              System Control
+            </NavLink>
+          )}
           <NavLink to="/terms" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""} hover:underline underline-offset-4`}>
             Terms
           </NavLink>
@@ -97,6 +103,7 @@ const HeaderNav: React.FC = () => {
         {/* Right: Theme toggle + profile/settings */}
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          {isAdminUser && <AdminBadge />}
           {user && (
             <span className="hidden lg:inline text-xs sm:text-sm text-muted-foreground">{usernameOrEmail()}</span>
           )}

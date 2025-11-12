@@ -100,11 +100,27 @@ const ProfileSettings: React.FC = () => {
     setAvatarPreview(file ? URL.createObjectURL(file) : null);
   };
 
+  // Cleanup avatar object URL when it changes or on unmount
+  React.useEffect(() => {
+    if (!avatarPreview) return;
+    return () => {
+      try { URL.revokeObjectURL(avatarPreview); } catch {}
+    };
+  }, [avatarPreview]);
+
   const onBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
     setBannerFile(file);
     setBannerPreview(file ? URL.createObjectURL(file) : null);
   };
+
+  // Cleanup banner object URL when it changes or on unmount
+  React.useEffect(() => {
+    if (!bannerPreview) return;
+    return () => {
+      try { URL.revokeObjectURL(bannerPreview); } catch {}
+    };
+  }, [bannerPreview]);
 
   const saveProfile = async () => {
     if (!user) return;
