@@ -143,7 +143,6 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     if (loadingWatchdog.current == null) {
       loadingWatchdog.current = window.setTimeout(() => {
         if (mounted) {
-          console.warn('[auth] watchdog clearing isLoading after timeout');
           setIsLoading(false);
         }
       }, 4000);

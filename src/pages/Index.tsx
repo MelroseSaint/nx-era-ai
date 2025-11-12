@@ -2,86 +2,96 @@
 
 import { useSession } from "@/components/SessionContextProvider";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { ArrowUpRight, Globe } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import GatedContent from "@/components/GatedContent";
+// Theme toggle is available globally in HeaderNav; avoid duplicates on this page
 
 const Index = () => {
-  const { session, user, isLoading, isProfileLoading } = useSession();
+  const { session } = useSession();
   const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast.error("Failed to log out: " + error.message);
-    } else {
-      toast.success("Logged out successfully!");
-      navigate('/login');
-    }
-  };
 
   // Only block on global auth loading; allow Home to render
   // even if profile details are still loading in the background.
-  if (isLoading) {
+  if (!session) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <p className="text-lg text-foreground">Loading authentication state...</p>
+      <div className="min-h-screen bg-gradient-to-br from-violet-200/60 via-blue-100/50 to-orange-100/60 dark:from-violet-900/40 dark:via-blue-900/30 dark:to-orange-900/40">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between rounded-full px-4 py-3 bg-background/60 backdrop-blur border border-border">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-full bg-primary" />
+              <span className="text-sm font-semibold">NXE AI</span>
+            </div>
+            <div className="flex items-center gap-6">
+              <button className="text-sm text-muted-foreground hover:text-foreground">Pricing</button>
+              <button className="text-sm text-muted-foreground hover:text-foreground">Enterprise</button>
+              <Globe className="h-4 w-4 text-muted-foreground" />
+              <Button onClick={() => navigate('/studio')} className="bg-lime-300 text-black hover:bg-lime-400">Start Building</Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-6">
+          <div className="max-w-5xl mx-auto text-center pt-16">
+            <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-foreground">
+              Let’s make your dream a <span className="bg-gradient-to-r from-primary to-cyan-400 bg-clip-text text-transparent">reality</span>.
+            </h1>
+            <h2 className="mt-4 text-lg sm:text-xl text-muted-foreground">NXE AI lets you build fully-functional apps in minutes with just your words. No coding necessary.</h2>
+
+            <Card className="mt-10 shadow-lg">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center gap-2">
+                  <Input className="flex-1 h-12 text-base" placeholder="What do you want to build?" />
+                  <Button className="h-12 px-4"><ArrowUpRight className="h-5 w-5" /></Button>
+                </div>
+                <div className="mt-4 flex flex-wrap justify-center gap-2">
+                  {['Reporting Dashboard','Gaming Platform','Onboarding Portal','Networking App','Room Visualizer'].map((t) => (
+                    <Button key={t} variant="outline" size="sm" className="rounded-full" onClick={() => navigate('/studio')}>{t}</Button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="mt-8 flex items-center justify-center gap-3">
+              {["AL","BK","CR","DT"].map((i) => (
+                <div key={i} className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs">
+                  {i}
+                </div>
+              ))}
+              <span className="text-sm text-muted-foreground">Trusted by 400K+ users</span>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
-      <div className="absolute top-4 right-4">
-        <ThemeToggle />
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-6 py-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded-full bg-primary" />
+            <span className="text-sm font-semibold">NXE AI</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <Button onClick={() => navigate('/dashboard')}>Go to Dashboard</Button>
+          </div>
+        </div>
       </div>
-      <div className="text-center bg-card text-card-foreground p-8 rounded-lg shadow-md">
-        {session ? (
-          <>
-            <h1 className="text-4xl font-bold mb-4 text-foreground">
-              Welcome, {user?.first_name || user?.email}!
-            </h1>
-            <p className="text-xl text-muted-foreground mb-6">
-              You are logged in. Start building your amazing project here!
-            </p>
-            <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 justify-center">
-              <Button onClick={handleLogout} className="bg-red-600 hover:bg-red-700 text-white">
-                Log Out
-              </Button>
-              <Button onClick={() => navigate('/dashboard')} className="bg-blue-600 hover:bg-blue-700 text-white">
-                Go to Dashboard
-              </Button>
-            </div>
 
-            <div className="mt-8">
-              <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
-                Gated Content Example
-              </h2>
-              <GatedContent>
-                <p className="text-lg text-green-600 dark:text-green-400">
-                  🎉 Congratulations! You are a subscriber and can see this exclusive content!
-                </p>
-                <p className="text-gray-700 dark:text-gray-300 mt-2">
-                  This is content only visible to authenticated subscribers.
-                </p>
-              </GatedContent>
-            </div>
-          </>
-        ) : (
-          <>
-            <h1 className="text-4xl font-bold mb-4 text-gray-900 dark:text-white">
-              Welcome to Your App
-            </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-6">
-              Please log in or sign up to continue.
-            </p>
-            <Button onClick={() => navigate('/login')} className="bg-blue-600 hover:bg-blue-700 text-white">
-              Go to Login
-            </Button>
-          </>
-        )}
+      <div className="container mx-auto px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-foreground">
+            Welcome back
+          </h1>
+          <p className="mt-3 text-muted-foreground">Start building from the Studio or jump into your Dashboard.</p>
+          <div className="mt-6 flex items-center justify-center gap-3">
+            <Button onClick={() => navigate('/studio')}>Open Studio</Button>
+            <Button variant="outline" onClick={() => navigate('/dashboard')}>Open Dashboard</Button>
+          </div>
+        </div>
       </div>
     </div>
   );
