@@ -4,6 +4,8 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Settings: React.FC = () => {
   const [emailNotifs, setEmailNotifs] = React.useState(true);
@@ -81,6 +83,25 @@ const Settings: React.FC = () => {
             <div className="flex gap-2">
               <Button className="btn-magenta hover:opacity-90 active:opacity-80" type="button">Save Changes</Button>
               <Button className="bg-muted hover:bg-accent text-foreground" type="reset">Reset</Button>
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  try { await supabase.auth.refreshSession(); toast.success('Session refreshed'); }
+                  catch (e) { toast.error(String((e as any)?.message || 'Refresh failed')); }
+                }}
+              >Refresh Session</Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  try {
+                    const keys = Object.keys(localStorage);
+                    keys.filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k));
+                    toast.success('Auth cache cleared');
+                  } catch (e) {
+                    toast.error(String((e as any)?.message || 'Clear failed'));
+                  }
+                }}
+              >Clear Auth Cache</Button>
             </div>
           </CardContent>
         </Card>

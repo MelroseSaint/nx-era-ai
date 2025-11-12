@@ -75,7 +75,7 @@ export default function Products() {
               {products.map((p) => (
                 <Card key={p.id} className="overflow-hidden">
                   {p.image && (
-                    <img src={p.image} alt={p.title} className="w-full h-40 object-cover" />
+                    <img src={p.image} alt={p.title} className="w-full h-40 object-cover" loading="lazy" height="160" />
                   )}
                   <CardContent className="space-y-2 pt-4">
                     <h3 className="text-lg font-semibold">{p.title}</h3>
@@ -100,4 +100,3 @@ export default function Products() {
     </div>
   );
 }
-

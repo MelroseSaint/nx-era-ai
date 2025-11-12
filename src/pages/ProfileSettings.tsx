@@ -135,8 +135,8 @@ const ProfileSettings: React.FC = () => {
         if (error) throw error;
       }
     } catch (e) {
-      console.warn('Auth update failed:', (e as any)?.message);
-      toast.error('Failed to update auth credentials');
+      const msg = (e as any)?.message || 'Auth update failed';
+      toast.error(String(msg));
     }
     // Update profile info
     const { error } = await supabase
@@ -144,8 +144,11 @@ const ProfileSettings: React.FC = () => {
       .update({ username, first_name: username })
       .eq('id', user.id);
     if (error) {
-      console.warn('Profile update failed:', error.message);
-      toast.error('Failed to update profile');
+      const msg = error.message || 'Profile update failed';
+      if (/JWT|token|Unauthorized|expired/i.test(msg)) {
+        try { await supabase.auth.refreshSession(); } catch {}
+      }
+      toast.error(String(msg));
     } else {
       toast.success('Profile updated');
     }
@@ -154,16 +157,19 @@ const ProfileSettings: React.FC = () => {
   const uploadAvatar = async () => {
     if (!user || !avatarFile) return;
     const path = `${user.id}/${Date.now()}_${avatarFile.name}`;
-    const { error } = await supabase.storage.from('avatars').upload(path, avatarFile, { upsert: true });
+    let { error } = await supabase.storage.from('avatars').upload(path, avatarFile, { upsert: true });
     if (error) {
-      console.warn('Avatar upload failed:', error.message);
-      toast.error('Avatar upload failed');
-      return;
+      const msg = error.message || 'Avatar upload failed';
+      if (/JWT|token|Unauthorized|expired/i.test(msg)) {
+        try { await supabase.auth.refreshSession(); } catch {}
+        const retry = await supabase.storage.from('avatars').upload(path, avatarFile, { upsert: true });
+        error = retry.error || null as any;
+      }
+      if (error) { toast.error(String(error.message || msg)); return; }
     }
     const { error: profileError } = await supabase.from('profiles').update({ avatar_path: path }).eq('id', user.id);
     if (profileError) {
-      console.warn('Avatar path save failed:', profileError.message);
-      toast.error('Failed to update avatar reference');
+      toast.error(String(profileError.message || 'Failed to update avatar reference'));
       return;
     }
     // Generate signed URL for immediate preview
@@ -175,16 +181,19 @@ const ProfileSettings: React.FC = () => {
   const uploadBanner = async () => {
     if (!user || !bannerFile) return;
     const path = `${user.id}/${Date.now()}_${bannerFile.name}`;
-    const { error } = await supabase.storage.from('banners').upload(path, bannerFile, { upsert: true });
+    let { error } = await supabase.storage.from('banners').upload(path, bannerFile, { upsert: true });
     if (error) {
-      console.warn('Banner upload failed:', error.message);
-      toast.error('Banner upload failed');
-      return;
+      const msg = error.message || 'Banner upload failed';
+      if (/JWT|token|Unauthorized|expired/i.test(msg)) {
+        try { await supabase.auth.refreshSession(); } catch {}
+        const retry = await supabase.storage.from('banners').upload(path, bannerFile, { upsert: true });
+        error = retry.error || null as any;
+      }
+      if (error) { toast.error(String(error.message || msg)); return; }
     }
     const { error: profileError } = await supabase.from('profiles').update({ banner_path: path }).eq('id', user.id);
     if (profileError) {
-      console.warn('Banner path save failed:', profileError.message);
-      toast.error('Failed to update banner reference');
+      toast.error(String(profileError.message || 'Failed to update banner reference'));
       return;
     }
     const { data: signed, error: signErr } = await supabase.storage.from('banners').createSignedUrl(path, SIGNED_TTL_SEC);
@@ -256,7 +265,7 @@ const ProfileSettings: React.FC = () => {
           </CardHeader>
           <CardContent className="space-y-3">
             {avatarPreview || avatarSignedUrl ? (
-              <img src={avatarPreview ?? avatarSignedUrl ?? ''} alt="Avatar" className="w-24 h-24 rounded-full object-cover border border-border" />
+              <img src={avatarPreview ?? avatarSignedUrl ?? ''} alt="Avatar" className="w-24 h-24 rounded-full object-cover border border-border" loading="lazy" width="96" height="96" />
             ) : (
               <div className="w-24 h-24 rounded-full bg-muted border border-border" />
             )}
@@ -278,7 +287,7 @@ const ProfileSettings: React.FC = () => {
           </CardHeader>
           <CardContent className="space-y-3">
             {bannerPreview || bannerSignedUrl ? (
-              <img src={bannerPreview ?? bannerSignedUrl ?? ''} alt="Banner" className="w-full h-40 rounded object-cover border border-border" />
+              <img src={bannerPreview ?? bannerSignedUrl ?? ''} alt="Banner" className="w-full h-40 rounded object-cover border border-border" loading="lazy" height="160" />
             ) : (
               <div className="w-full h-40 rounded bg-muted border border-border" />
             )}

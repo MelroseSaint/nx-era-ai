@@ -1,5 +1,6 @@
 import React from 'react';
 import { Editor } from '@monaco-editor/react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { buildSandboxHtml, makeSandboxUrl } from '@/utils/sandbox';
 import { Download, Play, Eye, Terminal, Save, Share2, Bot } from 'lucide-react';
@@ -159,10 +160,10 @@ export default function Studio() {
   };
 
   const toastSuccess = (m: string) => {
-    import('sonner').then(({ toast }) => toast.success(m)).catch(() => void 0);
+    try { toast.success(m); } catch { /* ignore */ }
   };
   const toastError = (m: string) => {
-    import('sonner').then(({ toast }) => toast.error(m)).catch(() => console.error(m));
+    try { toast.error(m); } catch { /* ignore */ }
   };
 
   // Access gating for guests and loading state
