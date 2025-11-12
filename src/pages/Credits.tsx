@@ -139,9 +139,9 @@ const Credits: React.FC = () => {
 
   return (
     <div className="container mx-auto py-6 px-4">
-      {([PRICE_PRO, PRICE_DEV, PRICE_ENTERPRISE, PRICE_CREDITS_100, PRICE_CREDITS_500, PRICE_CREDITS_1000].some(p => !p || String(p).startsWith('price_mock'))) && (
+      {( ([PRICE_PRO, PRICE_DEV].some(p => !p || String(p).startsWith('price_mock'))) ) && (
         <div className="mb-4 p-3 rounded-md border border-red-300 bg-red-100 text-red-800">
-          Stripe prices are not fully configured. Set Vercel envs for all plan and credit prices.
+          Stripe plan prices are not configured. Set `VITE_STRIPE_PRICE_PRO` and `VITE_STRIPE_PRICE_DEV`.
         </div>
       )}
       <div className="mb-4">

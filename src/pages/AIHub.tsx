@@ -5,6 +5,8 @@ import { useTheme } from "next-themes";
 import { useSession } from "@/components/SessionContextProvider";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Globe, ArrowUpRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Editor from "@monaco-editor/react";
 import { toast } from "sonner";
@@ -113,6 +115,66 @@ const AIHub: React.FC = () => {
 
   return (
     <div className="w-full bg-background text-foreground">
+      {/* Hero */}
+      <div className="bg-gradient-to-br from-violet-200/60 via-blue-100/50 to-orange-100/60 dark:from-violet-900/40 dark:via-blue-900/30 dark:to-orange-900/40">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between rounded-full px-4 py-3 bg-background/60 backdrop-blur border border-border">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-full bg-primary" />
+              <span className="text-sm font-semibold">NXE AI</span>
+            </div>
+            <div className="flex items-center gap-6">
+              <button onClick={() => navigate('/credits')} className="text-sm text-muted-foreground hover:text-foreground">Pricing</button>
+              <button onClick={() => navigate('/credits')} className="text-sm text-muted-foreground hover:text-foreground">Enterprise</button>
+              <Globe className="h-4 w-4 text-muted-foreground" />
+              <Button onClick={() => navigate('/studio')} className="bg-lime-300 text-black hover:bg-lime-400">Start Building</Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-6">
+          <div className="max-w-5xl mx-auto text-center pt-16 pb-12">
+            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">
+              Let’s make your dream a <span className="text-primary">reality</span>.
+              <br /> Right now.
+            </h1>
+            <p className="mt-4 text-muted-foreground">
+              Build fully-functional apps in minutes with just your words.
+            </p>
+            <div className="mt-8 mx-auto max-w-2xl flex items-center gap-2 rounded-2xl bg-background/70 backdrop-blur border border-border p-2">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="What do you want to build?"
+                className="flex-1"
+              />
+              <Button onClick={sendMessage} className="bg-primary text-primary-foreground"><ArrowUpRight className="h-4 w-4" /></Button>
+            </div>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-sm">
+              {[
+                'Reporting Dashboard',
+                'Gaming Platform',
+                'Onboarding Portal',
+                'Networking App',
+                'Room Visualizer',
+              ].map((t) => (
+                <button key={t} onClick={() => setInput(t)} className="px-3 py-1 rounded-full bg-background/80 border hover:bg-accent">
+                  {t}
+                </button>
+              ))}
+            </div>
+            <div className="mt-8 flex items-center justify-center gap-2 opacity-80">
+              <div className="flex -space-x-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="h-6 w-6 rounded-full border-2 border-background bg-muted" />
+                ))}
+              </div>
+              <span className="text-xs">Trusted by 400K+ users</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="container mx-auto py-6 px-4">
         <div className="mb-4">
           <h1 className="text-2xl font-semibold" style={{
